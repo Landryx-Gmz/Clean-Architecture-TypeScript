@@ -9,7 +9,11 @@
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
     "target": "ES2022",
-    "types": [],
+    "types": [
+      "node",
+      "vitest/globals"
+    ],
+    "moduleResolution": "nodenext",
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -39,11 +43,11 @@
   },
   "include": [
     "src/**/*.ts",
+    "tests/**/*.ts",
     "main.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "tests"
+    "dist"
   ]
 }
