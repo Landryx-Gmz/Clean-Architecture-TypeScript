@@ -1,4 +1,4 @@
-import { ping } from '../../src/shared/health';
+import { ping } from '../../src/shared/health.js';
 
 describe('ping', () => {
     it('debería retornar "pong"', () => {
