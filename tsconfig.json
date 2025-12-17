@@ -14,10 +14,6 @@
       "vitest/globals"
     ],
     "moduleResolution": "nodenext",
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
     // Other Outputs
     "sourceMap": true,
     "declaration": true,
@@ -47,13 +43,25 @@
       "@application/*": [
         "src/application/*"
       ],
+      "@aplication/*": [
+        "src/application/*"
+      ],
       "@infrastructure/*": [
+        "src/infrastructure/*"
+      ],
+      "@infrastructura/*": [
         "src/infrastructure/*"
       ],
       "@shared/*": [
         "src/shared/*"
+      ],
+      "@share/*": [
+        "src/shared/*"
+      ],
+      "@composition/*": [
+        "src/composition/*"
       ]
-    },
+    }
   },
   "include": [
     "src/**/*.ts",
