@@ -12,3 +12,25 @@
 - `POST /orders` crea un pedido.
 - `POST /orders/:orderId/items` agrega una línea (SKU + qty) con precio actual.
 - Devulve el total del pedido.
+
+# Estructura de carpetas
+
+/scr
+  /domain
+    /entities
+    /value-objects
+    /events
+    /errors
+  /application
+    /use-case
+    /ports
+    /dto
+    /errors.ts
+  /infrastructure
+    /persitence/in-memory
+    /http/controllers
+    /http
+    /messaging
+  /composition
+  /shared
+/tests
