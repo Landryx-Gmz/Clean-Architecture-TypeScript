@@ -46,7 +46,7 @@ export class Order {
             this.items.push(item);
         }
 
-        this.record(new ItemAddedToOrder(this.id.value, item.productId.value, item.quantity));
+        this.record(new ItemAddedToOrder(this.id.value, item.sku.value, item.quantity));
         const total = this.total();
         this.record(new OrderTotalRecalculated(this.id.value, total.amount, total.currency));
     }
