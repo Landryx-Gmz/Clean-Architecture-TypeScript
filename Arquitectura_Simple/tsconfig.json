@@ -2,14 +2,34 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist",
-    "baseUrl": ".",
-    "module": "nodenext",
+    "baseUrl": "src",
+    "module": "esnext",
     "target": "ES2022",
     "types": [
       "node",
       "vitest/globals"
     ],
-    "moduleResolution": "nodenext",
+    "paths": {
+      "@/*": [
+        "*"
+      ],
+      "@domain/*": [
+        "domain/*"
+      ],
+      "@application/*": [
+        "application/*"
+      ],
+      "@infrastructure/*": [
+        "infrastructure/*"
+      ],
+      "@composition/*": [
+        "composition/*"
+      ],
+      "@shared/*": [
+        "shared/*"
+      ]
+    },
+    "moduleResolution": "bundler",
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
