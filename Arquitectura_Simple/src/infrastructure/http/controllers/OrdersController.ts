@@ -3,7 +3,7 @@ import { CreateOrderUseCase as CreateOrder } from '@application/use-case/CreateO
 import { AddItemToOrderUseCase as AddItemToOrder } from '@application/use-case/AddItemToOrder';
 import type { CreateOrderDTO } from '@application/dto/CreateOrderDTO';
 import type { AddItemToOrderDTO } from '@application/dto/AddItemToOrderDTO';
-import type { AppError } from '@application/error';
+import type { AppError, ValidationError, NotFoundError, ConflictError, InfraError } from '@application/error';
 import { infraError } from '@application/error';
 import type { Order } from '@domain/entities/Order';
 import { isFailure } from '@shared/Result';
@@ -98,37 +98,16 @@ export class OrdersController {
     private async handleError(reply: FastifyReply, error: AppError): Promise<void> {
         switch (error.type) {
             case 'validation':
-                await reply.status(400).send({
-                    error: 'Error de validación',
-                    message: error.message,
-                    details: error.details,
-                });
-                break;
+                return this.handleValidationError(reply, error);
 
             case 'not_found':
-                await reply.status(404).send({
-                    error: 'Recurso no encontrado',
-                    message: error.message,
-                    resource: error.resource,
-                    id: error.id,
-                });
-                break;
+                return this.handleNotFoundError(reply, error);
 
             case 'conflict':
-                await reply.status(409).send({
-                    error: 'Conflicto',
-                    message: error.message,
-                    resource: error.resource,
-                    id: error.id,
-                });
-                break;
+                return this.handleConflictError(reply, error);
 
             case 'infra':
-                await reply.status(500).send({
-                    error: 'Error de infraestructura',
-                    message: error.message,
-                });
-                break;
+                return this.handleInfraError(reply, error);
 
             default:
                 await reply.status(500).send({
@@ -136,6 +115,55 @@ export class OrdersController {
                     message: 'Ha ocurrido un error inesperado',
                 });
         }
+    }
+
+    /**
+     * Maneja errores de validación (400).
+     */
+    private async handleValidationError(reply: FastifyReply, error: ValidationError): Promise<void> {
+        await reply.status(400).send({
+            type: error.type,
+            error: 'Error de validación',
+            message: error.message,
+            details: error.details,
+        });
+    }
+
+    /**
+     * Maneja errores de recurso no encontrado (404).
+     */
+    private async handleNotFoundError(reply: FastifyReply, error: NotFoundError): Promise<void> {
+        await reply.status(404).send({
+            type: error.type,
+            error: 'Recurso no encontrado',
+            message: error.message,
+            resource: error.resource,
+            id: error.id,
+        });
+    }
+
+    /**
+     * Maneja errores de conflicto (409).
+     */
+    private async handleConflictError(reply: FastifyReply, error: ConflictError): Promise<void> {
+        await reply.status(409).send({
+            type: error.type,
+            error: 'Conflicto',
+            message: error.message,
+            resource: error.resource,
+            id: error.id,
+        });
+    }
+
+    /**
+     * Maneja errores de infraestructura (500).
+     */
+    private async handleInfraError(reply: FastifyReply, error: InfraError): Promise<void> {
+        await reply.status(500).send({
+            type: error.type,
+            error: 'Error de infraestructura',
+            message: error.message,
+        });
     }
 
     /**
