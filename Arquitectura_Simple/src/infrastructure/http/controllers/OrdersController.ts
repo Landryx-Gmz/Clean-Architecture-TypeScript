@@ -4,6 +4,7 @@ import { AddItemToOrderUseCase as AddItemToOrder } from '@application/use-case/A
 import type { CreateOrderDTO } from '@application/dto/CreateOrderDTO';
 import type { AddItemToOrderDTO } from '@application/dto/AddItemToOrderDTO';
 import type { AppError } from '@application/error';
+import { infraError } from '@application/error';
 import type { Order } from '@domain/entities/Order';
 import { isFailure } from '@shared/Result';
 
@@ -48,10 +49,11 @@ export class OrdersController {
             const orderResponse = this.mapOrderToResponse(result.value);
             await reply.status(201).send(orderResponse);
         } catch (error) {
-            await reply.status(500).send({
-                error: 'Error interno del servidor',
-                message: error instanceof Error ? error.message : 'Error desconocido',
-            });
+            const appError = infraError(
+                error instanceof Error ? error.message : 'Error desconocido al crear la orden',
+                error,
+            );
+            return this.handleError(reply, appError);
         }
     }
 
@@ -79,10 +81,11 @@ export class OrdersController {
             const orderResponse = this.mapOrderToResponse(result.value);
             await reply.status(200).send(orderResponse);
         } catch (error) {
-            await reply.status(500).send({
-                error: 'Error interno del servidor',
-                message: error instanceof Error ? error.message : 'Error desconocido',
-            });
+            const appError = infraError(
+                error instanceof Error ? error.message : 'Error desconocido al agregar item a la orden',
+                error,
+            );
+            return this.handleError(reply, appError);
         }
     }
 
