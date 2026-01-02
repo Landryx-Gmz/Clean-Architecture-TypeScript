@@ -1,6 +1,7 @@
-import Fastify, { FastifyInstance } from 'fastify';
+import Fastify from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { OrdersController } from './controllers/OrdersController';
-import type { ServerDependencies } from '../dependencies';
+import type { ServerDependencies } from '@application/ports/ServerDependencies';
 
 export const buildServer = (dependencies: ServerDependencies): FastifyInstance => {
     const server = Fastify({
@@ -17,8 +18,8 @@ export const buildServer = (dependencies: ServerDependencies): FastifyInstance =
 
     // Capa de presentación: Instanciamos y registramos los controladores
     const ordersController = new OrdersController(
-        dependencies.createOrder,
-        dependencies.addItemToOrder,
+        dependencies.createOrderUseCase,
+        dependencies.addItemToOrderUseCase,
     );
 
     ordersController.registerRoutes(server);
