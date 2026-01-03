@@ -63,7 +63,10 @@ describe('AddItemToOrder acceptance (in-memory adapters)', () => {
 
         expect(isSuccess(addResult)).toBe(true);
 
-        const stored = await repo.findById(new OrderId(orderId));
+        const storedResult = await repo.findById(new OrderId(orderId));
+        expect(isSuccess(storedResult)).toBe(true);
+
+        const stored = isSuccess(storedResult) ? storedResult.value : null;
         expect(stored).not.toBeNull();
 
         const total = stored?.total();
@@ -73,7 +76,7 @@ describe('AddItemToOrder acceptance (in-memory adapters)', () => {
 
         const items = stored?.getItems() ?? [];
         expect(items).toHaveLength(2);
-        const keyboard = items.find((i) => i?.sku.value === 'KEYBOARD001');
+        const keyboard = items.find((i: any) => i?.sku.value === 'KEYBOARD001');
         expect(keyboard?.quantity).toBe(2);
     });
 
@@ -103,7 +106,10 @@ describe('AddItemToOrder acceptance (in-memory adapters)', () => {
         });
         expect(isSuccess(secondAdd)).toBe(true);
 
-        const stored = await repo.findById(new OrderId(orderId));
+        const storedResult = await repo.findById(new OrderId(orderId));
+        expect(isSuccess(storedResult)).toBe(true);
+
+        const stored = isSuccess(storedResult) ? storedResult.value : null;
         const item = stored?.getItems()[0];
         expect(item?.quantity).toBe(6);
         // price 29.99 * 6 = 179.94

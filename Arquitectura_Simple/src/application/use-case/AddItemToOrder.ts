@@ -4,7 +4,7 @@ import type { EventBus } from '@application/ports/EventBus';
 import type { Clock } from '@application/ports/Clock';
 import type { OrderRepository } from '@application/ports/OrderRepository';
 import type { PricingService } from '@application/ports/PricingService';
-import { fail, ok, type Result } from '@shared/Result';
+import { fail, ok, isSuccess, type Result } from '@shared/Result';
 import { DomainError } from '@domain/errors/DomainError';
 import { OrderId } from '@domain/value-objects/OrderId';
 import { SKU } from '@domain/value-objects/SKU';
@@ -20,16 +20,18 @@ type Dependencies = {
 };
 
 export class AddItemToOrderUseCase {
-    constructor(private readonly deps: Dependencies) {}
+    constructor(private readonly deps: Dependencies) { }
 
     async execute(input: AddItemToOrderDTO): Promise<Result<Order, AppError>> {
         try {
             const orderId = new OrderId(input.orderId);
-            const order = await this.deps.repository.findById(orderId);
-            if (!order) {
-                return fail(notFoundError('orden', input.orderId));
+            const orderResult = await this.deps.repository.findById(orderId);
+
+            if (!isSuccess(orderResult)) {
+                return orderResult;
             }
 
+            const order = orderResult.value;
             const currency = order.total().currency;
             const sku = new SKU(input.sku);
             const unitPrice = await this.deps.pricing.getUnitPrice(sku, currency);
@@ -38,7 +40,12 @@ export class AddItemToOrderUseCase {
             order.addItem(orderItem);
 
             const events = order.pullEvents();
-            await this.deps.repository.save(order);
+            const saveResult = await this.deps.repository.save(order);
+
+            if (!isSuccess(saveResult)) {
+                return fail(saveResult.error);
+            }
+
             await this.deps.eventBus.publish(events);
 
             return ok(order);

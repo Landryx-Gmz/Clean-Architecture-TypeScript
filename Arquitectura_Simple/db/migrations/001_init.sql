@@ -9,8 +9,24 @@ CREATE TABLE orders (
     customer_id UUID NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('pending', 'paid', 'shipped', 'cancelled')),
     total_amount NUMERIC(12, 2) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Trigger para actualizar automáticamente updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_orders_updated_at
+    BEFORE UPDATE ON orders
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 
 -- Tabla de items de orden: cada fila es un producto en una orden
 CREATE TABLE order_items (

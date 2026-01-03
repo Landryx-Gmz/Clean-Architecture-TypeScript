@@ -1,6 +1,6 @@
 import { conflictError, infraError, notFoundError, validationError } from '@application/error';
 import type { CreateOrderDTO } from '@application/dto/CreateOrderDTO';
-import { fail, ok, type Result } from '@shared/Result';
+import { fail, ok, isSuccess, type Result } from '@shared/Result';
 import type { EventBus } from '@application/ports/EventBus';
 import type { Clock } from '@application/ports/Clock';
 import type { OrderRepository } from '@application/ports/OrderRepository';
@@ -20,7 +20,7 @@ type Dependencies = {
 };
 
 export class CreateOrderUseCase {
-    constructor(private readonly deps: Dependencies) {}
+    constructor(private readonly deps: Dependencies) { }
 
     async execute(input: CreateOrderDTO): Promise<Result<Order, AppError>> {
         try {
@@ -37,7 +37,12 @@ export class CreateOrderUseCase {
             }
 
             const events = order.pullEvents();
-            await this.deps.repository.save(order);
+            const saveResult = await this.deps.repository.save(order);
+
+            if (!isSuccess(saveResult)) {
+                return fail(saveResult.error);
+            }
+
             await this.deps.eventBus.publish(events);
 
             return ok(order);
