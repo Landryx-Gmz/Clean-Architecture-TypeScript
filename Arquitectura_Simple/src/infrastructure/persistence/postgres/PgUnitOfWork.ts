@@ -1,5 +1,5 @@
 import { Client, type PoolClient } from 'pg';
-import type { OrderRepository } from '../../../application/ports/OrderRepository';
+import type { OrderRepository } from '@application/ports/OrderRepository';
 import { PostgresOrderRepository } from './PostgresOrderRepository';
 
 /**
