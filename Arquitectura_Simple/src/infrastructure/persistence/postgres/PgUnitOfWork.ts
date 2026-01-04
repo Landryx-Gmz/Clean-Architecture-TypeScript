@@ -1,6 +1,6 @@
 import { Client, type PoolClient } from 'pg';
 import type { OrderRepository } from '@application/ports/OrderRepository';
-import { PostgresOrderRepository } from './PostgresOrderRepository';
+import { PostgresOrderRepository } from '@infrastructure/persistence/postgres/PostgresOrderRepository';
 
 /**
  * Repositorios disponibles dentro de una transacción

@@ -1,12 +1,12 @@
 import { Client, type PoolClient } from 'pg';
 import { createHash } from 'crypto';
-import type { OrderRepository } from '../../../application/ports/OrderRepository';
-import { Order } from '../../../domain/entities/Order';
-import { OrderItem } from '../../../domain/value-objects/OrderItem';
-import type { Result } from '../../../shared/Result';
-import { ok, fail } from '../../../shared/Result';
-import { notFoundError, infraError } from '../../../application/error';
-import type { AppError } from '../../../application/error';
+import type { OrderRepository } from '@application/ports/OrderRepository';
+import { Order } from '@domain/entities/Order';
+import { OrderItem } from '@domain/value-objects/OrderItem';
+import type { Result } from '@shared/Result';
+import { ok, fail } from '@shared/Result';
+import { notFoundError, infraError } from '@application/error';
+import type { AppError } from '@application/error';
 
 export class PostgresOrderRepository implements OrderRepository {
     constructor(private readonly client: Client | PoolClient) { }
@@ -15,15 +15,15 @@ export class PostgresOrderRepository implements OrderRepository {
         const connection = await this.getConnection();
 
         try {
-            // Calcula el total_amount dinámicamente
-            const items = order.getItems();
+            // Calcula el total_amount dinámicamente respetando la privacidad de OrderItem
+            const items = [...order.getItems()];
             const totalAmount = items.reduce((sum, item) => sum + item.unitPrice.amount * item.quantity, 0);
 
             // Upsert de la orden
             await this.upsertOrder(connection, order, totalAmount);
 
             // Reemplaza los items de la orden
-            await this.replaceOrderItems(connection, order);
+            await this.replaceOrderItems(connection, items, order);
 
             return ok(undefined);
         } catch (error) {
@@ -87,6 +87,7 @@ export class PostgresOrderRepository implements OrderRepository {
 
     private async replaceOrderItems(
         connection: PoolClient | Client,
+        items: OrderItem[],
         order: Order
     ): Promise<void> {
         const deleteQuery = 'DELETE FROM order_items WHERE order_id = $1';
@@ -95,9 +96,8 @@ export class PostgresOrderRepository implements OrderRepository {
         const insertQuery = `
             INSERT INTO order_items (id, order_id, sku, quantity, unit_price)
             VALUES ($1, $2, $3, $4, $5);
-    `;
+        `;
 
-        const items = order.getItems();
         for (const item of items) {
             const itemId = createHash('md5').update(`${order.id.value}-${item.sku.value}`).digest('hex');
             await connection.query(insertQuery, [
