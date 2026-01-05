@@ -1,29 +1,53 @@
-export type ValidationError = {
-    readonly type: 'validation';
-    readonly message: string;
-    readonly details?: Record<string, string> | undefined;
-    readonly cause?: unknown;
-};
+export abstract class AppErrorBase extends Error {
+    abstract readonly type: 'validation' | 'not_found' | 'conflict' | 'infra';
 
-export type NotFoundError = {
-    readonly type: 'not_found';
-    readonly message: string;
-    readonly resource: string;
-    readonly id?: string | undefined;
-};
+    protected constructor(message: string, readonly cause?: unknown) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
 
-export type ConflictError = {
-    readonly type: 'conflict';
-    readonly message: string;
-    readonly resource?: string | undefined;
-    readonly id?: string | undefined;
-};
+export class ValidationError extends AppErrorBase {
+    readonly type = 'validation' as const;
 
-export type InfraError = {
-    readonly type: 'infra';
-    readonly message: string;
-    readonly cause?: unknown;
-};
+    constructor(message: string, readonly details?: Record<string, string>, cause?: unknown) {
+        super(message, cause);
+    }
+}
+
+export class NotFoundError extends AppErrorBase {
+    readonly type = 'not_found' as const;
+
+    constructor(readonly resource: string, readonly id?: string) {
+        super(id ? `${resource} "${id}" no encontrado` : `${resource} no encontrado`);
+    }
+}
+
+export class ConflictError extends AppErrorBase {
+    readonly type = 'conflict' as const;
+
+    constructor(message: string, readonly resource?: string, readonly id?: string) {
+        super(message);
+    }
+}
+
+export class InfraError extends AppErrorBase {
+    readonly type = 'infra' as const;
+
+    constructor(message: string, cause?: unknown) {
+        super(message, cause);
+    }
+
+    /**
+     * Crea un InfraError genérico para errores inesperados.
+     */
+    static unexpected(cause: unknown, message = 'Error inesperado de infraestructura'): InfraError {
+        if (cause instanceof Error && cause.message) {
+            return new InfraError(cause.message, cause);
+        }
+        return new InfraError(message, cause);
+    }
+}
 
 export type AppError = ValidationError | NotFoundError | ConflictError | InfraError;
 
@@ -31,30 +55,12 @@ export const validationError = (
     message: string,
     details?: Record<string, string>,
     cause?: unknown,
-): ValidationError => ({
-    type: 'validation',
-    message,
-    details,
-    cause,
-});
+): ValidationError => new ValidationError(message, details, cause);
 
-export const notFoundError = (resource: string, id?: string): NotFoundError => ({
-    type: 'not_found',
-    message: id ? `${resource} "${id}" no encontrado` : `${resource} no encontrado`,
-    resource,
-    id,
-});
+export const notFoundError = (resource: string, id?: string): NotFoundError => new NotFoundError(resource, id);
 
-export const conflictError = (message: string, resource?: string, id?: string): ConflictError => ({
-    type: 'conflict',
-    message,
-    resource,
-    id,
-});
+export const conflictError = (message: string, resource?: string, id?: string): ConflictError =>
+    new ConflictError(message, resource, id);
 
-export const infraError = (message: string, cause?: unknown): InfraError => ({
-    type: 'infra',
-    message,
-    cause,
-});
+export const infraError = (message: string, cause?: unknown): InfraError => new InfraError(message, cause);
 
