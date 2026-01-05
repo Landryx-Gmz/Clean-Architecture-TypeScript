@@ -1,38 +1,51 @@
-export type Result<T, E> = Success<T> | Failure<E>;
-
-export interface Success<T> {
-    readonly kind: 'success';
-    readonly value: T;
-}
-
-export interface Failure<E> {
-    readonly kind: 'failure';
-    readonly error: E;
-}
+export type Result<T, E> =
+    | { success: true; data: T; isSuccess: true; isFailure: false; value: T }
+    | { success: false; error: E; isSuccess: false; isFailure: true }
 
 export const ok = <T>(value: T): Result<T, never> => ({
-    kind: 'success',
-    value,
-});
+    success: true,
+    data: value,
+    isSuccess: true,
+    isFailure: false,
+    value
+})
 
 export const fail = <E>(error: E): Result<never, E> => ({
-    kind: 'failure',
+    success: false,
     error,
-});
+    isSuccess: false,
+    isFailure: true
+})
 
-export const isSuccess = <T, E>(result: Result<T, E>): result is Success<T> =>
-    result.kind === 'success';
+export const isOk = <T, E>(result: Result<T, E>): result is { success: true; data: T; isSuccess: true; isFailure: false; value: T } =>
+    result.success
 
-export const isFailure = <T, E>(result: Result<T, E>): result is Failure<E> =>
-    result.kind === 'failure';
+export const isError = <T, E>(result: Result<T, E>): result is { success: false; error: E; isSuccess: false; isFailure: true } =>
+    !result.success
 
-export const match = <T, E, R>(
-    result: Result<T, E>,
-    onSuccess: (value: T) => R,
-    onFailure: (error: E) => R,
-): R => {
-    if (isSuccess(result)) {
-        return onSuccess(result.value);
+export const map = <T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> => {
+    if (result.success) {
+        return ok(fn(result.value))
     }
-    return onFailure(result.error);
-};
+    return fail(result.error)
+}
+
+export const flatMap = <T, U, E>(result: Result<T, E>, fn: (value: T) => Result<U, E>): Result<U, E> => {
+    if (result.success) {
+        return fn(result.value)
+    }
+    return fail(result.error)
+}
+
+export const combine = <T, E>(results: Result<T, E>[]): Result<T[], E> => {
+    const values: T[] = []
+
+    for (const result of results) {
+        if (result.isFailure) {
+            return fail(result.error)
+        }
+        values.push(result.value)
+    }
+
+    return ok(values)
+}

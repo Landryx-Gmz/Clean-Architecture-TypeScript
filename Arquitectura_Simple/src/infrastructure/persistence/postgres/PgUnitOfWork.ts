@@ -1,93 +1,36 @@
-import { Client, type PoolClient } from 'pg';
-import type { OrderRepository } from '@application/ports/OrderRepository';
-import { PostgresOrderRepository } from '@infrastructure/persistence/postgres/PostgresOrderRepository';
+import { Pool } from 'pg';
+import type { UnitOfWork, Repositories } from '@application/ports/UnitOfWork';
+import { PostgresOrderRepository } from '@infrastructure/persistence/postgres/PostgresOrderRepository.js';
+import { type Result, ok, fail } from '@shared/Result';
+import { type AppError, InfraError } from '@application/error';
 
-/**
- * Repositorios disponibles dentro de una transacción
- */
-export interface UnitOfWorkRepositories {
-    readonly orders: OrderRepository;
-}
+export class PgUnitOfWork implements UnitOfWork {
+    constructor(private readonly pool: Pool) { }
 
-/**
- * Unit of Work para PostgreSQL
- * 
- * Gestiona transacciones (BEGIN/COMMIT/ROLLBACK) y expone repositorios
- * que utilizan la misma conexión dentro de la transacción.
- * 
- * Ejemplo de uso:
- * ```typescript
- * const uow = new PgUnitOfWork(pool);
- * 
- * await uow.run(async (repos) => {
- *   const order = Order.create(new OrderId('123'), 'USD');
- *   order.addItem(...);
- *   
- *   const saveResult = await repos.orders.save(order);
- *   if (!isSuccess(saveResult)) {
- *     throw new Error('Failed to save');
- *   }
- *   
- *   return order;
- * });
- * // Si todo va bien → COMMIT
- * // Si hay error → ROLLBACK
- * ```
- */
-export class PgUnitOfWork {
-    constructor(private readonly pool: Client | PoolClient) { }
-
-    /**
-     * Ejecuta una función dentro de una transacción
-     * 
-     * @param callback Función que recibe los repositorios disponibles
-     * @returns El resultado devuelto por la función callback
-     * 
-     * @example
-     * const result = await uow.run(async (repos) => {
-     *   const savedResult = await repos.orders.save(order);
-     *   return savedResult;
-     * });
-     */
-    async run<T>(
-        callback: (repos: UnitOfWorkRepositories) => Promise<T>
-    ): Promise<T> {
-        // Obtener una conexión del pool (o usar el cliente actual)
-        const client = this.pool instanceof Client
-            ? this.pool
-            : await (this.pool as any).connect();
+    async run<T>(fn: (repos: Repositories) => Promise<T>): Promise<Result<T, AppError>> {
+        const client = await this.pool.connect();
 
         try {
-            // Iniciar transacción
             await client.query('BEGIN');
 
-            // Crear repositorios que usan esta conexión
-            const repos: UnitOfWorkRepositories = {
-                orders: new PostgresOrderRepository(client),
+            // Create repositories that share the same connection/transaction
+            const repositories: Repositories = {
+                orderRepository: new PostgresOrderRepository(client),
             };
 
-            // Ejecutar la función con los repositorios
-            const result = await callback(repos);
+            // Execute the business logic
+            const result = await fn(repositories);
 
-            // Si todo va bien, hacer COMMIT
             await client.query('COMMIT');
 
-            return result;
+            return ok(result);
         } catch (error) {
-            // Si hay error, hacer ROLLBACK
-            try {
-                await client.query('ROLLBACK');
-            } catch (rollbackError) {
-                console.error('Error during ROLLBACK:', rollbackError);
-            }
+            await client.query('ROLLBACK');
 
-            // Re-lanzar el error original
-            throw error;
+            const errorMessage = error instanceof Error ? error.message : 'Unknown transaction error';
+            return fail(new InfraError(`Transaction failed: ${errorMessage}`));
         } finally {
-            // Liberar la conexión si fue obtenida del pool
-            if (this.pool !== client && 'release' in client) {
-                (client as any).release();
-            }
+            client.release();
         }
     }
 }
