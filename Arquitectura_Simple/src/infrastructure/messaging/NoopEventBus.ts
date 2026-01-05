@@ -1,6 +1,6 @@
 import type { EventBus } from '@application/ports/EventBus';
 import type { DomainEvent } from '@domain/events/DomainEvent';
-import { ok, type Result } from '@shared/Result';
+import { ok, fail, type Result } from '@shared/Result';
 import type { AppError } from '@application/error';
 import { infraError } from '@application/error';
 
@@ -16,17 +16,15 @@ export class NoopEventBus implements EventBus {
      * @param events - Array de eventos de dominio a publicar
      * @returns Promise que se resuelve cuando los eventos han sido procesados
      */
-    async publish(events: DomainEvent[]): Promise<void> {
+    async publish(events: DomainEvent[]): Promise<Result<void, AppError>> {
         const validationResult = this.validateEvents(events);
 
         if (validationResult.kind === 'failure') {
-            throw new Error(validationResult.error.message);
+            return validationResult;
         }
 
         // No operation - los eventos son descartados después de la validación
-        // Esta implementación es útil para tests o cuando no se necesita
-        // realmente publicar eventos a un bus de eventos real
-        return Promise.resolve();
+        return ok(undefined);
     }
 
     /**
@@ -37,20 +35,20 @@ export class NoopEventBus implements EventBus {
      */
     private validateEvents(events: DomainEvent[]): Result<void, AppError> {
         if (!Array.isArray(events)) {
-            return { kind: 'failure', error: infraError('Los eventos deben ser un array') };
+            return fail(infraError('Los eventos deben ser un array'));
         }
 
         for (const event of events) {
             if (!event) {
-                return { kind: 'failure', error: infraError('Los eventos no pueden ser null o undefined') };
+                return fail(infraError('Los eventos no pueden ser null o undefined'));
             }
 
             if (!event.type || typeof event.type !== 'string') {
-                return { kind: 'failure', error: infraError('Cada evento debe tener un tipo válido') };
+                return fail(infraError('Cada evento debe tener un tipo válido'));
             }
 
             if (!(event.occurredAt instanceof Date)) {
-                return { kind: 'failure', error: infraError('Cada evento debe tener una fecha de ocurrencia válida') };
+                return fail(infraError('Cada evento debe tener una fecha de ocurrencia válida'));
             }
         }
 
