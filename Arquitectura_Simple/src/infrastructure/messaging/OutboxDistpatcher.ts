@@ -60,7 +60,7 @@ export class OutboxDispatcher {
         ORDER BY created_at ASC
         LIMIT $1
         FOR UPDATE SKIP LOCKED
-      `
+        `
 
             const result = await client.query(selectQuery, [this.batchSize])
             const events: OutboxEvent[] = result.rows
@@ -87,7 +87,7 @@ export class OutboxDispatcher {
         UPDATE outbox 
         SET published_at = NOW()
         WHERE id = ANY($1)
-      `
+        `
 
             await client.query(updateQuery, [eventIds])
             await client.query('COMMIT')
@@ -142,6 +142,6 @@ async function runDispatcher() {
 }
 
 // Run the dispatcher if this file is executed directly
-if (import.meta.url === new URL(process.argv[1], 'file://').href) {
+if (import.meta.url === new URL(process.argv[1] ?? '', 'file://').href) {
     runDispatcher()
 }
