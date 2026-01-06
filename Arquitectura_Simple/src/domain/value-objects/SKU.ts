@@ -1,22 +1,21 @@
-import { InvalidIdError } from '@domain/errors/InvalidIdError';
-
-/**
- * Value Object para SKU (identificador de inventario).
- * Normaliza a mayúsculas para evitar duplicados por casing.
- */
 export class SKU {
-    readonly value: string;
+  private readonly _value: string
 
-    constructor(value: string) {
-        const normalized = value?.trim();
-        if (!normalized || normalized.length < 3) {
-            throw new InvalidIdError(value, 'sku');
-        }
-        this.value = normalized.toUpperCase();
+  constructor(value: string) {
+    if (!value || value.trim().length === 0) {
+      throw new Error('SKU cannot be empty')
     }
+    if (value.trim().length < 3) {
+      throw new Error('SKU must be at least 3 characters long')
+    }
+    this._value = value.trim().toUpperCase()
+  }
 
-    equals(other: SKU): boolean {
-        return this.value === other.value;
-    }
+  get value(): string {
+    return this._value
+  }
+
+  equals(other: SKU): boolean {
+    return this._value === other._value
+  }
 }
-

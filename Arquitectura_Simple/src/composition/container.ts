@@ -1,45 +1,43 @@
-import { CreateOrderUseCase } from '@application/use-case/CreateOrder';
-import { AddItemToOrderUseCase } from '@application/use-case/AddItemToOrder';
-import type { ServerDependencies } from '@application/ports/ServerDependencies';
-import type { Clock } from '@application/ports/Clock';
-import type { OrderRepository } from '@application/ports/OrderRepository';
-import type { PricingService } from '@application/ports/PricingService';
-import type { EventBus } from '@application/ports/EventBus';
-import { InMemoryOrderRepository } from '@infrastructure/persistence/in-memory/InMemoryOrderRepository';
-import { StaticPricingService } from '@infrastructure/http/StaticPricingService';
-import { NoopEventBus } from '@infrastructure/messaging/NoopEventBus';
+import { InMemoryOrderRepository } from '../infrastructure/persistence/in-memory/in-memory-order-repository.js'
+import { StaticPricingService } from '../infrastructure/http/StaticPricingService.js'
+import { NoopEventBus } from '../infrastructure/messaging/NoopEventBus.js'
+import { PinoLogger } from '../infrastructure/logging/pino-logger.js'
+import { CreateOrder } from '../application/use-cases/create-order.js'
+import { AddItemToOrder } from '../application/use-cases/add-item-to-order.js'
+import { OrderRepository } from '../application/ports/order-repository.js'
+import { PricingService } from '../application/ports/pricing-service.js'
+import { EventBus } from '../application/ports/event-bus.js'
+import { Logger } from '../application/ports/logger.js'
+import { ServerDependencies } from '../application/ports/server-dependencies.js'
 
-export type Dependencies = ServerDependencies & {
-    orderRepository: OrderRepository;
-    pricingService: PricingService;
-    eventBus: EventBus;
-};
+export interface Dependencies extends ServerDependencies {
+  // Ports
+  orderRepository: OrderRepository
+  pricingService: PricingService
+  eventBus: EventBus
+  logger: Logger
+}
 
-export const buildContainer = (): Dependencies => {
-    const orderRepository = new InMemoryOrderRepository();
-    const pricingService = new StaticPricingService();
-    const eventBus = new NoopEventBus();
-    const clock: Clock = { now: () => new Date() };
+export function buildContainer(): Dependencies {
+  // Infrastructure layer - Adapters
+  const orderRepository = new InMemoryOrderRepository()
+  const pricingService = new StaticPricingService()
+  const eventBus = new NoopEventBus()
+  const logger = new PinoLogger()
 
-    const createOrderUseCase = new CreateOrderUseCase({
-        repository: orderRepository,
-        pricing: pricingService,
-        eventBus,
-        clock,
-    });
+  // Application layer - Use Cases
+  const createOrderUseCase = new CreateOrder(orderRepository, eventBus)
+  const addItemToOrderUseCase = new AddItemToOrder(orderRepository, pricingService, eventBus)
 
-    const addItemToOrderUseCase = new AddItemToOrderUseCase({
-        repository: orderRepository,
-        pricing: pricingService,
-        eventBus,
-        clock,
-    });
-
-    return {
-        orderRepository,
-        pricingService,
-        eventBus,
-        createOrderUseCase,
-        addItemToOrderUseCase,
-    };
-};
+  return {
+    // Ports
+    orderRepository,
+    pricingService,
+    eventBus,
+    logger,
+    
+    // Use Cases
+    createOrderUseCase,
+    addItemToOrderUseCase
+  }
+}

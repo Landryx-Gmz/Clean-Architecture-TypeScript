@@ -1,48 +1,43 @@
-import { CurrencyMismatchError } from '@domain/errors/CurrencyMismatchError';
-import { InvalidAmountError } from '@domain/errors/InvalidAmountError';
-import type { Currency } from '@domain/value-objects/Currency';
+import { Currency } from './currency.js'
 
-/**
- * Value Object para representar dinero con moneda inmutable.
- */
 export class Money {
-    readonly amount: number;
-    readonly currency: Currency;
+  private readonly _amount: number
+  private readonly _currency: Currency
 
-    private constructor(amount: number, currency: Currency) {
-        if (!Number.isFinite(amount) || amount < 0) {
-            throw new InvalidAmountError(amount);
-        }
-        // Normalizamos a 2 decimales sin perder la intención de validación previa.
-        this.amount = Math.round(amount * 100) / 100;
-        this.currency = currency;
+  constructor(amount: number, currency: Currency) {
+    if (amount < 0) {
+      throw new Error('Amount cannot be negative')
     }
+    if (!Number.isFinite(amount)) {
+      throw new Error('Amount must be a finite number')
+    }
+    this._amount = Math.round(amount * 100) / 100 // Round to 2 decimal places
+    this._currency = currency
+  }
 
-    static of(amount: number, currency: Currency): Money {
-        return new Money(amount, currency);
-    }
+  get amount(): number {
+    return this._amount
+  }
 
-    static zero(currency: Currency): Money {
-        return new Money(0, currency);
-    }
+  get currency(): Currency {
+    return this._currency
+  }
 
-    add(other: Money): Money {
-        this.ensureSameCurrency(other);
-        return new Money(this.amount + other.amount, this.currency);
+  add(other: Money): Money {
+    if (!this._currency.equals(other._currency)) {
+      throw new Error('Cannot add money with different currencies')
     }
+    return new Money(this._amount + other._amount, this._currency)
+  }
 
-    multiply(quantity: number): Money {
-        if (!Number.isFinite(quantity) || quantity <= 0) {
-            throw new InvalidAmountError(quantity);
-        }
-        return new Money(this.amount * quantity, this.currency);
+  multiply(factor: number): Money {
+    if (factor < 0) {
+      throw new Error('Factor cannot be negative')
     }
+    return new Money(this._amount * factor, this._currency)
+  }
 
-    private ensureSameCurrency(other: Money): void {
-        if (this.currency !== other.currency) {
-            throw new CurrencyMismatchError(this.currency, other.currency);
-        }
-    }
+  equals(other: Money): boolean {
+    return this._amount === other._amount && this._currency.equals(other._currency)
+  }
 }
-
-

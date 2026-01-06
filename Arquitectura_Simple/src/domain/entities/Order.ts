@@ -1,76 +1,75 @@
-import { CurrencyMismatchError } from '@domain/errors/CurrencyMismatchError';
-import type { Currency } from '@domain/value-objects/Currency';
-import { Money } from '@domain/value-objects/Money';
-import { OrderId } from '@domain/value-objects/OrderId';
-import { OrderItem } from '@domain/value-objects/OrderItem';
-import type { DomainEvent } from '@domain/events/DomainEvent';
-import {
-    ItemAddedToOrder,
-    OrderCreated,
-    OrderTotalRecalculated,
-} from '@domain/events/OrderEvents';
+import { SKU } from '../value-objects/sku.js'
+import { OrderItem } from '../value-objects/order-item.js'
+import { Money } from '../value-objects/money.js'
+import { Quantity } from '../value-objects/quantity.js'
+import { DomainEvent } from '../events/domain-event.js'
+import { OrderCreated } from '../events/order-created.js'
+import { ItemAddedToOrder } from '../events/item-added-to-order.js'
 
-/**
- * Aggregate Root para la orden de compra.
- */
 export class Order {
-    readonly id: OrderId;
-    private readonly currency: Currency;
-    private items: OrderItem[] = [];
-    private domainEvents: DomainEvent[] = [];
+  private readonly _sku: SKU
+  private readonly _items: Map<string, OrderItem> = new Map()
+  private readonly _events: DomainEvent[] = []
 
-    private constructor(id: OrderId, currency: Currency) {
-        this.id = id;
-        this.currency = currency;
+  constructor(sku: SKU) {
+    this._sku = sku
+    this._events.push(new OrderCreated(sku.value))
+  }
+
+  get sku(): SKU {
+    return this._sku
+  }
+
+  get items(): OrderItem[] {
+    return Array.from(this._items.values())
+  }
+
+  get events(): DomainEvent[] {
+    return [...this._events]
+  }
+
+  addItem(productSku: SKU, quantity: Quantity, unitPrice: Money): void {
+    const existingItem = this._items.get(productSku.value)
+    
+    if (existingItem) {
+      if (!existingItem.unitPrice.equals(unitPrice)) {
+        throw new Error('Cannot add item with different unit price')
+      }
+      const updatedItem = existingItem.increaseQuantity(quantity)
+      this._items.set(productSku.value, updatedItem)
+    } else {
+      const newItem = new OrderItem(productSku, quantity, unitPrice)
+      this._items.set(productSku.value, newItem)
     }
 
-    static create(id: OrderId, currency: Currency): Order {
-        const order = new Order(id, currency);
-        order.record(new OrderCreated(id.value, currency));
-        return order;
+    this._events.push(new ItemAddedToOrder(
+      this._sku.value,
+      productSku.value,
+      quantity.value,
+      unitPrice.amount,
+      unitPrice.currency.code
+    ))
+  }
+
+  getTotalByCurrency(): Map<string, Money> {
+    const totals = new Map<string, Money>()
+
+    for (const item of this._items.values()) {
+      const currencyCode = item.unitPrice.currency.code
+      const itemTotal = item.totalPrice
+      
+      if (totals.has(currencyCode)) {
+        const currentTotal = totals.get(currencyCode)!
+        totals.set(currencyCode, currentTotal.add(itemTotal))
+      } else {
+        totals.set(currencyCode, itemTotal)
+      }
     }
 
-    addItem(item: OrderItem): void {
-        if (item.unitPrice.currency !== this.currency) {
-            throw new CurrencyMismatchError(this.currency, item.unitPrice.currency);
-        }
+    return totals
+  }
 
-        const existingIndex = this.items.findIndex((current) => current.sameProduct(item));
-        if (existingIndex >= 0) {
-            const existingItem = this.items[existingIndex];
-            if (!existingItem) {
-                throw new Error('Item inconsistente en la colección');
-            }
-            this.items[existingIndex] = existingItem.mergeQuantity(item.quantity);
-        } else {
-            this.items.push(item);
-        }
-
-        this.record(new ItemAddedToOrder(this.id.value, item.sku.value, item.quantity));
-        const total = this.total();
-        this.record(new OrderTotalRecalculated(this.id.value, total.amount, total.currency));
-    }
-
-    total(): Money {
-        return this.items.reduce(
-            (acc, it) => acc.add(it.subtotal()),
-            Money.zero(this.currency),
-        );
-    }
-
-    getItems(): ReadonlyArray<OrderItem> {
-        return this.items.slice();
-    }
-
-    pullEvents(): DomainEvent[] {
-        const events = this.domainEvents;
-        this.domainEvents = [];
-        return events;
-    }
-
-    private record(event: DomainEvent): void {
-        this.domainEvents.push(event);
-    }
+  clearEvents(): void {
+    this._events.length = 0
+  }
 }
-
-

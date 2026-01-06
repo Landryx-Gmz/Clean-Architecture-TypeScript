@@ -1,28 +1,28 @@
-import Fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
-import { OrdersController } from './controllers/OrdersController';
-import type { ServerDependencies } from '@application/ports/ServerDependencies';
+import fastify from 'fastify'
+import { ServerDependencies } from '../../application/ports/server-dependencies.js'
+import { OrderController } from './controllers/order-controller.js'
 
-export const buildServer = (dependencies: ServerDependencies): FastifyInstance => {
-    const server = Fastify({
-        logger: true,
-    });
+export async function buildServer(dependencies: ServerDependencies) {
+  const server = fastify({ 
+    logger: false
+  })
 
-    // Check endpoint para comprobar el estado del servidor
-    server.get('/check', async () => {
-        return {
-            status: 'ok',
-            timestamp: new Date(),
-        };
-    });
+  // Presentation layer (Controllers)
+  const orderController = new OrderController(
+    dependencies.createOrderUseCase,
+    dependencies.addItemToOrderUseCase,
+    dependencies.logger
+  )
 
-    // Capa de presentación: Instanciamos y registramos los controladores
-    const ordersController = new OrdersController(
-        dependencies.createOrderUseCase,
-        dependencies.addItemToOrderUseCase,
-    );
+  // Register routes
+  await orderController.registerRoutes(server)
 
-    ordersController.registerRoutes(server);
+  // Health check endpoint
+  server.get('/health', async () => {
+    dependencies.logger.info('Health check requested')
+    return { status: 'ok', timestamp: new Date().toISOString() }
+  })
 
-    return server;
-};
+  return server
+}
+
