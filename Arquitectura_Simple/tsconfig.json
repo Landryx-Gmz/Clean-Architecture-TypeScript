@@ -1,58 +1,33 @@
 {
   "compilerOptions": {
-    "rootDir": ".",
-    "outDir": "./dist",
-    "baseUrl": "src",
-    "module": "esnext",
     "target": "ES2022",
-    "types": [
-      "node"
-    ],
-    "typeRoots": [
-      "node_modules/@types"
-    ],
-    "paths": {
-      "@/*": [
-        "*"
-      ],
-      "@domain/*": [
-        "domain/*"
-      ],
-      "@application/*": [
-        "application/*"
-      ],
-      "@infrastructure/*": [
-        "infrastructure/*"
-      ],
-      "@composition/*": [
-        "composition/*"
-      ],
-      "@shared/*": [
-        "shared/*"
-      ]
-    },
-    "moduleResolution": "bundler",
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
     "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "declaration": true,
+    "sourceMap": true,
+    "removeComments": false,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true
   },
   "include": [
     "src/**/*.ts",
-    "main.ts",
-    "tests/**/*.ts"
+    "main.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "test"
+    "tests"
   ]
 }
