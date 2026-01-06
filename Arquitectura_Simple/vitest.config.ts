@@ -21,5 +21,7 @@ export default defineConfig({
             "src/**/*.{test,spec}.{ts,js}",
             "tests/**/*.{test,spec}.{ts,js}",
         ],
+        environment: 'node',
+        globals: true,
     },
 });
