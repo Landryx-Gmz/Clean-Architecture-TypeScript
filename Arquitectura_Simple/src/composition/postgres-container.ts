@@ -1,12 +1,12 @@
 import { StaticPricingService } from '../infrastructure/http/StaticPricingService.js';
 import { NoopEventBus } from '../infrastructure/messaging/NoopEventBus.js';
-import { PinoLogger } from '../infrastructure/logging/pino-logger.js';
+import { PinoLogger } from '../infrastructure/logging/PinoLogger.js';
 import { CreateOrderWithUoW } from '../application/use-cases/create-order-with-uow.js';
-import { PricingService } from '../application/ports/pricing-service.js';
-import { EventBus } from '../application/ports/event-bus.js';
-import { Logger } from '../application/ports/logger.js';
-import { UnitOfWork } from '../application/ports/unit-of-work.js';
-import { DatabaseFactory } from '../infrastructure/database/database-factory.js';
+import { PricingService } from '../application/ports/PricingService.js';
+import { EventBus } from '../application/ports/EventBus.js';
+import { Logger } from '../application/ports/Logger.js';
+import { UnitOfWork } from '../application/ports/UnitOfWork.js';
+import { DatabaseFactory } from '../infrastructure/database/DatabaseFactory.js';
 
 export interface PostgresDependencies {
   // Ports
@@ -14,7 +14,7 @@ export interface PostgresDependencies {
   pricingService: PricingService;
   eventBus: EventBus;
   logger: Logger;
-  
+
   // Use Cases
   createOrderUseCase: CreateOrderWithUoW;
 }
@@ -35,7 +35,7 @@ export function buildPostgresContainer(): PostgresDependencies {
     pricingService,
     eventBus,
     logger,
-    
+
     // Use Cases
     createOrderUseCase,
   };

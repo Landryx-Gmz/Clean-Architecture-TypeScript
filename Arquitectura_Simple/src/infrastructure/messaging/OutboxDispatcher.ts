@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { DatabaseFactory } from '../database/database-factory.js'
+import { DatabaseFactory } from '../database/DatabaseFactory.js'
 
 interface OutboxEvent {
   id: string
@@ -49,7 +49,7 @@ export class OutboxDispatcher {
 
   private async processUnpublishedEvents(): Promise<void> {
     const client = await this.pool.connect()
-    
+
     try {
       await client.query('BEGIN')
 
@@ -103,11 +103,11 @@ export class OutboxDispatcher {
 
   private async publishEvent(event: OutboxEvent): Promise<void> {
     console.log(`Publishing event: ${event.event_type} for aggregate ${event.aggregate_type}:${event.aggregate_id}`)
-    
+
     // Here you would integrate with your actual message broker (RabbitMQ, Apache Kafka, AWS SQS, etc.)
     // For now, we'll just log the event
     console.log('Event data:', JSON.stringify(event.event_data, null, 2))
-    
+
     // Simulate async publishing
     await this.sleep(10)
   }
@@ -120,7 +120,7 @@ export class OutboxDispatcher {
 // CLI runner for the dispatcher
 async function runDispatcher() {
   const dispatcher = new OutboxDispatcher()
-  
+
   process.on('SIGINT', () => {
     console.log('Received SIGINT, shutting down gracefully...')
     dispatcher.stop()

@@ -1,6 +1,6 @@
-import { SKU } from './sku.js'
-import { Quantity } from './quantity.js'
-import { Money } from './money.js'
+import { SKU } from './SKU.js'
+import { Quantity } from './Quantity.js'
+import { Money } from './Money.js'
 
 export class OrderItem {
   private readonly _productSku: SKU
@@ -39,7 +39,7 @@ export class OrderItem {
 
   equals(other: OrderItem): boolean {
     return this._productSku.equals(other._productSku) &&
-           this._quantity.equals(other._quantity) &&
-           this._unitPrice.equals(other._unitPrice)
+      this._quantity.equals(other._quantity) &&
+      this._unitPrice.equals(other._unitPrice)
   }
 }

@@ -1,10 +1,10 @@
-import { SKU } from '../../domain/value-objects/sku.js'
-import { Quantity } from '../../domain/value-objects/quantity.js'
-import { Result, ok, fail } from '../../shared/result.js'
-import { OrderRepository } from '../ports/order-repository.js'
-import { PricingService } from '../ports/pricing-service.js'
-import { EventBus } from '../ports/event-bus.js'
-import { AddItemToOrderDto } from '../dto/add-item-to-order-dto.js'
+import { SKU } from '../../domain/value-objects/SKU.js'
+import { Quantity } from '../../domain/value-objects/Quantity.js'
+import { Result, ok, fail } from '../../shared/Result.js'
+import { OrderRepository } from '../ports/OrderRepository.js'
+import { PricingService } from '../ports/PricingService.js'
+import { EventBus } from '../ports/EventBus.js'
+import { AddItemToOrderDto } from '../dto/AddItemToOrderDto.js'
 import { AppError, ValidationError } from '../errors.js'
 
 export class AddItemToOrder {
@@ -12,7 +12,7 @@ export class AddItemToOrder {
     private readonly orderRepository: OrderRepository,
     private readonly pricingService: PricingService,
     private readonly eventBus: EventBus
-  ) {}
+  ) { }
 
   async execute(dto: AddItemToOrderDto): Promise<Result<void, AppError>> {
     try {
@@ -24,18 +24,18 @@ export class AddItemToOrder {
       if (!orderResult.success) {
         return fail(orderResult.error)
       }
-      
+
       const order = orderResult.data
-      
+
       const priceResult = await this.pricingService.getPrice(productSku)
       if (!priceResult.success) {
         return fail(priceResult.error)
       }
-      
+
       const unitPrice = priceResult.data
 
       order.addItem(productSku, quantity, unitPrice)
-      
+
       const saveResult = await this.orderRepository.save(order)
       if (!saveResult.success) {
         return fail(saveResult.error)

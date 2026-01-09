@@ -2,10 +2,10 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { randomUUID } from 'crypto'
 import { CreateOrder } from '../../../application/use-cases/create-order.js'
 import { AddItemToOrder } from '../../../application/use-cases/add-item-to-order.js'
-import { CreateOrderDto } from '../../../application/dto/create-order-dto.js'
-import { AddItemToOrderDto } from '../../../application/dto/add-item-to-order-dto.js'
+import { CreateOrderDto } from '../../../application/dto/CreateOrderDto.js'
+import { AddItemToOrderDto } from '../../../application/dto/AddItemToOrderDto.js'
 import { AppError } from '../../../application/errors.js'
-import { Logger } from '../../../application/ports/logger.js'
+import { Logger } from '../../../application/ports/Logger.js'
 
 interface CreateOrderRequest {
   orderSku: string
@@ -25,7 +25,7 @@ export class OrderController {
     private readonly createOrderUseCase: CreateOrder,
     private readonly addItemToOrderUseCase: AddItemToOrder,
     private readonly logger: Logger
-  ) {}
+  ) { }
 
   async registerRoutes(fastify: FastifyInstance): Promise<void> {
     fastify.post('/orders', this.createOrder.bind(this))
@@ -37,13 +37,13 @@ export class OrderController {
     reply: FastifyReply
   ): Promise<void> {
     const requestId = randomUUID()
-    const logger = this.logger.child({ 
+    const logger = this.logger.child({
       requestId,
       operation: 'createOrder',
       method: request.method,
       url: request.url
     })
-    
+
     logger.info('Creating order', { orderSku: request.body.orderSku })
 
     const dto: CreateOrderDto = {
@@ -54,7 +54,7 @@ export class OrderController {
 
     if (!result.success) {
       const statusCode = this.mapErrorToStatusCode(result.error)
-      
+
       logger.error('Order creation failed', {
         orderSku: request.body.orderSku,
         error: result.error.type,
@@ -74,20 +74,20 @@ export class OrderController {
   }
 
   private async addItem(
-    request: FastifyRequest<{ 
+    request: FastifyRequest<{
       Params: AddItemParams
-      Body: AddItemRequest 
+      Body: AddItemRequest
     }>,
     reply: FastifyReply
   ): Promise<void> {
     const requestId = randomUUID()
-    const logger = this.logger.child({ 
+    const logger = this.logger.child({
       requestId,
       operation: 'addItem',
       method: request.method,
       url: request.url
     })
-    
+
     logger.info('Adding item to order', {
       orderSku: request.params.orderSku,
       productSku: request.body.productSku,
@@ -104,7 +104,7 @@ export class OrderController {
 
     if (!result.success) {
       const statusCode = this.mapErrorToStatusCode(result.error)
-      
+
       logger.error('Adding item to order failed', {
         orderSku: request.params.orderSku,
         productSku: request.body.productSku,

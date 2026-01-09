@@ -1,6 +1,6 @@
 import { CreateOrder } from '../use-cases/create-order.js'
 import { AddItemToOrder } from '../use-cases/add-item-to-order.js'
-import { Logger } from './logger.js'
+import { Logger } from './Logger.js'
 
 export interface ServerDependencies {
   createOrderUseCase: CreateOrder

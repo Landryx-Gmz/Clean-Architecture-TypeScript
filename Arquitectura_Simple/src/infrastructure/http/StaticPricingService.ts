@@ -1,8 +1,8 @@
-import { SKU } from '../../domain/value-objects/sku.js'
-import { Money } from '../../domain/value-objects/money.js'
-import { Currency } from '../../domain/value-objects/currency.js'
-import { Result, ok, fail } from '../../shared/result.js'
-import { PricingService } from '../../application/ports/pricing-service.js'
+import { SKU } from '../../domain/value-objects/SKU.js'
+import { Money } from '../../domain/value-objects/Money.js'
+import { Currency } from '../../domain/value-objects/Currency.js'
+import { Result, ok, fail } from '../../shared/Result.js'
+import { PricingService } from '../../application/ports/PricingService.js'
 import { AppError, NotFoundError, InfraError } from '../../application/errors.js'
 
 export class StaticPricingService implements PricingService {
@@ -20,14 +20,14 @@ export class StaticPricingService implements PricingService {
   async getPrice(productSku: SKU): Promise<Result<Money, AppError>> {
     try {
       const priceData = this.prices.get(productSku.value)
-      
+
       if (!priceData) {
         return fail(new NotFoundError('Product price', productSku.value))
       }
 
       const currency = new Currency(priceData.currency)
       const money = new Money(priceData.amount, currency)
-      
+
       return ok(money)
     } catch (error) {
       return fail(new InfraError('Failed to get product price', error instanceof Error ? error : undefined))

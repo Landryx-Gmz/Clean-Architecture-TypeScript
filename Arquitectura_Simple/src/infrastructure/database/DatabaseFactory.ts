@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { PgUnitOfWork } from '../persistence/postgres/pg-unit-of-work.js';
+import { PgUnitOfWork } from '../persistence/postgres/PgUnitOfWork.js';
 import { getDatabaseUrl } from '../../composition/config.js';
 
 export class DatabaseFactory {

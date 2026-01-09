@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from 'fastify'
 import { randomUUID } from 'crypto'
-import { Logger } from '../../../application/ports/logger.js'
+import { Logger } from '../../../application/ports/Logger.js'
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -11,7 +11,7 @@ declare module 'fastify' {
 export async function loggingPlugin(fastify: FastifyInstance, opts: { logger: Logger }) {
   fastify.addHook('onRequest', async (request: FastifyRequest) => {
     const requestId = randomUUID()
-    
+
     request.logger = opts.logger.child({
       requestId,
       method: request.method,
@@ -24,7 +24,7 @@ export async function loggingPlugin(fastify: FastifyInstance, opts: { logger: Lo
 
   fastify.addHook('onResponse', async (request: FastifyRequest, reply) => {
     const responseTime = reply.getResponseTime()
-    
+
     request.logger.info('Request completed', {
       statusCode: reply.statusCode,
       responseTimeMs: Math.round(responseTime)

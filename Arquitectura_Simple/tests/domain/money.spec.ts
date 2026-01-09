@@ -1,61 +1,115 @@
-import { describe, expect, it } from 'vitest';
-import { Money } from '@domain/value-objects/Money';
-import type { Currency } from '@domain/value-objects/Currency';
-import { CurrencyMismatchError } from '@domain/errors/CurrencyMismatchError';
-import { InvalidAmountError } from '@domain/errors/InvalidAmountError';
+import { describe, it, expect } from 'vitest'
+import { Money } from '@domain/value-objects/money'
+import { Currency } from '@domain/value-objects/currency'
 
-const USD: Currency = 'USD';
-const EUR: Currency = 'EUR';
+describe('Money', () => {
+  describe('construction', () => {
+    it('should create money with valid amount and currency', () => {
+      const currency = new Currency('USD')
+      const money = new Money(100.50, currency)
 
-describe('Money value object', () => {
-    it('creates zero and preserves currency', () => {
-        // Zero factory keeps currency and amount 0
-        const zero = Money.zero(USD);
-        expect(zero.amount).toBe(0);
-        expect(zero.currency).toBe(USD);
-    });
+      expect(money.amount).toBe(100.50)
+      expect(money.currency.code).toBe('USD')
+    })
 
-    it('rounds to 2 decimals on creation', () => {
-        // Constructor normalizes to two decimals
-        const value = Money.of(10.129, USD);
-        expect(value.amount).toBe(10.13);
-    });
+    it('should round amount to 2 decimal places', () => {
+      const currency = new Currency('USD')
+      const money = new Money(100.999, currency)
 
-    it('throws on negative or non-finite amounts', () => {
-        // Validation rejects negative, NaN, or infinite values
-        expect(() => Money.of(-1, USD)).toThrow(InvalidAmountError);
-        expect(() => Money.of(Number.NaN, USD)).toThrow(InvalidAmountError);
-        expect(() => Money.of(Number.POSITIVE_INFINITY, USD)).toThrow(InvalidAmountError);
-    });
+      expect(money.amount).toBe(101.00)
+    })
 
-    it('adds with same currency', () => {
-        // add sums amounts when currencies match
-        const a = Money.of(10, USD);
-        const b = Money.of(5.55, USD);
-        const sum = a.add(b);
-        expect(sum.amount).toBe(15.55);
-        expect(sum.currency).toBe(USD);
-    });
+    it('should throw error for negative amounts', () => {
+      const currency = new Currency('USD')
 
-    it('fails to add different currencies', () => {
-        // add rejects different currencies via CurrencyMismatchError
-        const a = Money.of(10, USD);
-        const b = Money.of(5, EUR);
-        expect(() => a.add(b)).toThrow(CurrencyMismatchError);
-    });
+      expect(() => new Money(-10, currency)).toThrow('Amount cannot be negative')
+    })
 
-    it('multiplies by a positive integer', () => {
-        // multiply scales amount preserving currency
-        const price = Money.of(9.99, USD);
-        const subtotal = price.multiply(3);
-        expect(subtotal.amount).toBe(29.97);
-        expect(subtotal.currency).toBe(USD);
-    });
+    it('should throw error for infinite amounts', () => {
+      const currency = new Currency('USD')
 
-    it('throws on non-positive multiplier', () => {
-        // multiply rejects zero or negative quantities
-        const price = Money.of(9.99, USD);
-        expect(() => price.multiply(0)).toThrow(InvalidAmountError);
-        expect(() => price.multiply(-2)).toThrow(InvalidAmountError);
-    });
-});
+      expect(() => new Money(Infinity, currency)).toThrow('Amount must be a finite number')
+    })
+
+    it('should throw error for NaN amounts', () => {
+      const currency = new Currency('USD')
+
+      expect(() => new Money(NaN, currency)).toThrow('Amount must be a finite number')
+    })
+  })
+
+  describe('operations', () => {
+    it('should add money with same currency', () => {
+      const usd = new Currency('USD')
+      const money1 = new Money(100, usd)
+      const money2 = new Money(50.25, usd)
+
+      const result = money1.add(money2)
+
+      expect(result.amount).toBe(150.25)
+      expect(result.currency.code).toBe('USD')
+    })
+
+    it('should throw error when adding different currencies', () => {
+      const usd = new Currency('USD')
+      const eur = new Currency('EUR')
+      const money1 = new Money(100, usd)
+      const money2 = new Money(50, eur)
+
+      expect(() => money1.add(money2)).toThrow('Cannot add money with different currencies')
+    })
+
+    it('should multiply by positive factor', () => {
+      const currency = new Currency('USD')
+      const money = new Money(25.50, currency)
+
+      const result = money.multiply(3)
+
+      expect(result.amount).toBe(76.50)
+      expect(result.currency.code).toBe('USD')
+    })
+
+    it('should multiply by zero', () => {
+      const currency = new Currency('USD')
+      const money = new Money(100, currency)
+
+      const result = money.multiply(0)
+
+      expect(result.amount).toBe(0)
+    })
+
+    it('should throw error when multiplying by negative factor', () => {
+      const currency = new Currency('USD')
+      const money = new Money(100, currency)
+
+      expect(() => money.multiply(-2)).toThrow('Factor cannot be negative')
+    })
+  })
+
+  describe('equality', () => {
+    it('should be equal when amount and currency match', () => {
+      const usd = new Currency('USD')
+      const money1 = new Money(100, usd)
+      const money2 = new Money(100, usd)
+
+      expect(money1.equals(money2)).toBe(true)
+    })
+
+    it('should not be equal when amounts differ', () => {
+      const usd = new Currency('USD')
+      const money1 = new Money(100, usd)
+      const money2 = new Money(200, usd)
+
+      expect(money1.equals(money2)).toBe(false)
+    })
+
+    it('should not be equal when currencies differ', () => {
+      const usd = new Currency('USD')
+      const eur = new Currency('EUR')
+      const money1 = new Money(100, usd)
+      const money2 = new Money(100, eur)
+
+      expect(money1.equals(money2)).toBe(false)
+    })
+  })
+})

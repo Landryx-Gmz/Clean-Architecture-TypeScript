@@ -1,21 +1,21 @@
-import { Order } from '../../domain/entities/order.js';
-import { SKU } from '../../domain/value-objects/sku.js';
-import { Result, ok, fail } from '../../shared/result.js';
-import { UnitOfWork } from '../ports/unit-of-work.js';
-import { EventBus } from '../ports/event-bus.js';
-import { CreateOrderDto } from '../dto/create-order-dto.js';
+import { Order } from '../../domain/entities/Order.js';
+import { SKU } from '../../domain/value-objects/SKU.js';
+import { Result, ok, fail } from '../../shared/Result.js';
+import { UnitOfWork } from '../ports/UnitOfWork.js';
+import { EventBus } from '../ports/EventBus.js';
+import { CreateOrderDto } from '../dto/CreateOrderDto.js';
 import { AppError, ValidationError } from '../errors.js';
 
 export class CreateOrderWithUoW {
   constructor(
     private readonly unitOfWork: UnitOfWork,
     private readonly eventBus: EventBus
-  ) {}
+  ) { }
 
   async execute(dto: CreateOrderDto): Promise<Result<void, AppError>> {
     try {
       const orderSku = new SKU(dto.orderSku);
-      
+
       const result = await this.unitOfWork.run(async (repos) => {
         // Check if order already exists (skip this check for now as we're using UUIDs)
         // For simplicity, we'll generate a unique order each time
@@ -23,7 +23,7 @@ export class CreateOrderWithUoW {
 
         // Create new order
         const order = new Order(orderSku);
-        
+
         // Save order within transaction
         const saveResult = await repos.orderRepository.save(order);
         if (!saveResult.success) {

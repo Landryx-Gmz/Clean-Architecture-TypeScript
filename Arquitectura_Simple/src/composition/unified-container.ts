@@ -4,11 +4,11 @@ import { buildPostgresContainer, closeContainer as closePostgresContainer } from
 import { StaticPricingService } from '../infrastructure/http/StaticPricingService.js'
 import { AddItemToOrder } from '../application/use-cases/add-item-to-order.js'
 import { CreateOrder } from '../application/use-cases/create-order.js'
-import { MessagingFactory } from '../infrastructure/messaging/messaging-factory.js'
-import { ServerDependencies } from '../application/ports/server-dependencies.js'
-import { PinoLogger } from '../infrastructure/logging/pino-logger.js'
-import { DatabaseFactory } from '../infrastructure/database/database-factory.js'
-import { PostgresOrderRepository } from '../infrastructure/persistence/postgres/postgres-order-repository.js'
+import { MessagingFactory } from '../infrastructure/messaging/MessagingFactory.js'
+import { ServerDependencies } from '../application/ports/ServerDependencies.js'
+import { PinoLogger } from '../infrastructure/logging/PinoLogger.js'
+import { DatabaseFactory } from '../infrastructure/database/DatabaseFactory.js'
+import { PostgresOrderRepository } from '../infrastructure/persistence/postgres/PostgresOrderRepository.js'
 
 export interface UnifiedDependencies extends ServerDependencies {
   cleanup?: () => Promise<void>
@@ -16,11 +16,11 @@ export interface UnifiedDependencies extends ServerDependencies {
 
 export function buildUnifiedContainer(): UnifiedDependencies {
   const logger = new PinoLogger()
-  
+
   if (useInMemoryDatabase()) {
     logger.info('Using in-memory database')
     const dependencies = buildContainer()
-    
+
     return {
       ...dependencies,
       logger,
@@ -30,36 +30,36 @@ export function buildUnifiedContainer(): UnifiedDependencies {
       }
     }
   }
-  
+
   if (usePostgresDatabase()) {
     logger.info('Using PostgreSQL database')
     const postgresDependencies = buildPostgresContainer()
-    
+
     // Create missing dependencies for server compatibility
     const pricingService = new StaticPricingService()
     const eventBus = MessagingFactory.createEventBus('outbox')
-    
+
     // Create a shared PostgreSQL repository for non-UoW operations  
     const pool = DatabaseFactory.createPool()
     // For simplicity, we'll use the pool directly, but need to cast it
     const orderRepository = new PostgresOrderRepository(pool as any)
-    
+
     // Create AddItemToOrder use case with actual repository
     const addItemToOrderUseCase = new AddItemToOrder(
       orderRepository,
       pricingService,
       eventBus
     )
-    
+
     // Create adapter that extends CreateOrder for compatibility
     const createOrderUseCase = new CreateOrder(
       null as any, // Not used in UoW version
       eventBus
     )
-    
+
     // Override execute method to use the UoW implementation
     createOrderUseCase.execute = postgresDependencies.createOrderUseCase.execute.bind(postgresDependencies.createOrderUseCase)
-    
+
     return {
       createOrderUseCase,
       addItemToOrderUseCase,
@@ -70,6 +70,6 @@ export function buildUnifiedContainer(): UnifiedDependencies {
       }
     }
   }
-  
+
   throw new Error(`Unsupported database type: ${config.DATABASE_TYPE}`)
 }

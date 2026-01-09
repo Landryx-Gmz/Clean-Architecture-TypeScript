@@ -1,10 +1,10 @@
-import { SKU } from '../value-objects/sku.js'
-import { OrderItem } from '../value-objects/order-item.js'
-import { Money } from '../value-objects/money.js'
-import { Quantity } from '../value-objects/quantity.js'
-import { DomainEvent } from '../events/domain-event.js'
-import { OrderCreated } from '../events/order-created.js'
-import { ItemAddedToOrder } from '../events/item-added-to-order.js'
+import { SKU } from '../value-objects/SKU.js'
+import { OrderItem } from '../value-objects/OrderItem.js'
+import { Money } from '../value-objects/Money.js'
+import { Quantity } from '../value-objects/Quantity.js'
+import { DomainEvent } from '../events/DomainEvent.js'
+import { OrderCreated } from '../events/OrderCreated.js'
+import { ItemAddedToOrder } from '../events/ItemAddedToOrder.js'
 
 export class Order {
   private readonly _sku: SKU
@@ -30,7 +30,7 @@ export class Order {
 
   addItem(productSku: SKU, quantity: Quantity, unitPrice: Money): void {
     const existingItem = this._items.get(productSku.value)
-    
+
     if (existingItem) {
       if (!existingItem.unitPrice.equals(unitPrice)) {
         throw new Error('Cannot add item with different unit price')
@@ -57,7 +57,7 @@ export class Order {
     for (const item of this._items.values()) {
       const currencyCode = item.unitPrice.currency.code
       const itemTotal = item.totalPrice
-      
+
       if (totals.has(currencyCode)) {
         const currentTotal = totals.get(currencyCode)!
         totals.set(currencyCode, currentTotal.add(itemTotal))

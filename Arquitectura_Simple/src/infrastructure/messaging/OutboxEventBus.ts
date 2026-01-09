@@ -1,8 +1,8 @@
 import { Pool } from 'pg'
 import { randomUUID, createHash } from 'crypto'
-import { DomainEvent } from '../../domain/events/domain-event.js'
-import { Result, ok, fail } from '../../shared/result.js'
-import { EventBus } from '../../application/ports/event-bus.js'
+import { DomainEvent } from '../../domain/events/DomainEvent.js'
+import { Result, ok, fail } from '../../shared/Result.js'
+import { EventBus } from '../../application/ports/EventBus.js'
 import { AppError, InfraError } from '../../application/errors.js'
 
 interface OutboxRecord {
@@ -15,7 +15,7 @@ interface OutboxRecord {
 }
 
 export class OutboxEventBus implements EventBus {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pool) { }
 
   async publish(events: DomainEvent[]): Promise<Result<void, AppError>> {
     if (events.length === 0) {
@@ -23,7 +23,7 @@ export class OutboxEventBus implements EventBus {
     }
 
     const client = await this.pool.connect()
-    
+
     try {
       const outboxRecords: OutboxRecord[] = events.map(event => ({
         id: randomUUID(),
@@ -36,9 +36,9 @@ export class OutboxEventBus implements EventBus {
 
       const query = `
         INSERT INTO outbox (id, aggregate_id, aggregate_type, event_type, event_data, created_at)
-        VALUES ${outboxRecords.map((_, index) => 
-          `($${index * 6 + 1}, $${index * 6 + 2}, $${index * 6 + 3}, $${index * 6 + 4}, $${index * 6 + 5}, $${index * 6 + 6})`
-        ).join(', ')}
+        VALUES ${outboxRecords.map((_, index) =>
+        `($${index * 6 + 1}, $${index * 6 + 2}, $${index * 6 + 3}, $${index * 6 + 4}, $${index * 6 + 5}, $${index * 6 + 6})`
+      ).join(', ')}
       `
 
       const params = outboxRecords.flatMap(record => [
@@ -51,7 +51,7 @@ export class OutboxEventBus implements EventBus {
       ])
 
       await client.query(query, params)
-      
+
       return ok(undefined)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown outbox persistence error'
@@ -63,11 +63,11 @@ export class OutboxEventBus implements EventBus {
 
   private extractAggregateType(event: DomainEvent): string {
     const eventName = event.constructor.name
-    
+
     if (eventName.includes('Order')) {
       return 'Order'
     }
-    
+
     return 'Unknown'
   }
 
@@ -81,10 +81,10 @@ export class OutboxEventBus implements EventBus {
 
   private getEventPayload(event: DomainEvent): object {
     const payload = { ...event }
-    
+
     delete (payload as any).aggregateId
     delete (payload as any).occurredOn
-    
+
     return payload
   }
 

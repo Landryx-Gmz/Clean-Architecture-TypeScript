@@ -1,5 +1,5 @@
-import { DomainEvent } from '../../domain/events/domain-event.js'
-import { Result } from '../../shared/result.js'
+import { DomainEvent } from '../../domain/events/DomainEvent.js'
+import { Result } from '../../shared/Result.js'
 import { AppError } from '../errors.js'
 
 export interface EventBus {

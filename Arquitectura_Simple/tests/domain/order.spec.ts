@@ -1,101 +1,177 @@
-import { describe, expect, it } from 'vitest';
-import { Order } from '@domain/entities/Order';
-import { OrderId } from '@domain/value-objects/OrderId';
-import { OrderItem } from '@domain/value-objects/OrderItem';
-import { Money } from '@domain/value-objects/Money';
-import { SKU } from '@domain/value-objects/SKU';
-import type { Currency } from '@domain/value-objects/Currency';
-import { CurrencyMismatchError } from '@domain/errors/CurrencyMismatchError';
-import {
-    ItemAddedToOrder,
-    OrderCreated,
-    OrderTotalRecalculated,
-} from '@domain/events/OrderEvents';
+import { describe, it, expect } from 'vitest'
+import { Order } from '@domain/entities/order'
+import { SKU } from '@domain/value-objects/sku'
+import { Money } from '@domain/value-objects/money'
+import { Currency } from '@domain/value-objects/currency'
+import { Quantity } from '@domain/value-objects/quantity'
+import { OrderCreated } from '@domain/events/order-created'
+import { ItemAddedToOrder } from '@domain/events/item-added-to-order'
 
-const USD: Currency = 'USD';
-const EUR: Currency = 'EUR';
+describe('Order', () => {
+  describe('creation', () => {
+    it('should create order with SKU', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
 
-const makeItem = (sku: string, unit: number, currency: Currency, qty: number) =>
-    OrderItem.of(new SKU(sku), Money.of(unit, currency), qty);
+      expect(order.sku.value).toBe('ORDER-001')
+      expect(order.items).toHaveLength(0)
+    })
 
-describe('Order aggregate', () => {
-    it('emits OrderCreated when created', () => {
-        // Creation should emit OrderCreated domain event
-        const order = Order.create(new OrderId('ORD-123'), USD);
+    it('should emit OrderCreated event on creation', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
 
-        const events = order.pullEvents();
-        expect(events).toHaveLength(1);
+      const events = order.events
+      expect(events).toHaveLength(1)
+      expect(events[0]).toBeInstanceOf(OrderCreated)
+      expect(events[0].aggregateId).toBe('ORDER-001')
+    })
+  })
 
-        const created = events[0]!;
-        expect(created).toBeInstanceOf(OrderCreated);
-        expect(created).toMatchObject({ orderId: 'ORD-123', currency: USD });
-        expect(created.type).toBe('order.created');
-        expect(created.occurredAt).toBeInstanceOf(Date);
-    });
+  describe('adding items', () => {
+    it('should add item to order', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      const productSku = new SKU('LAPTOP-001')
+      const quantity = new Quantity(2)
+      const unitPrice = new Money(999.99, new Currency('USD'))
 
-    it('records item added and total recalculated when adding an item', () => {
-        // Adding an item should emit item-added and total-recalculated events
-        const order = Order.create(new OrderId('ORD-456'), USD);
-        order.pullEvents();
+      order.addItem(productSku, quantity, unitPrice)
 
-        const item = OrderItem.of(new SKU('abc-123'), Money.of(10, USD), 2);
+      expect(order.items).toHaveLength(1)
+      expect(order.items[0].productSku.value).toBe('LAPTOP-001')
+      expect(order.items[0].quantity.value).toBe(2)
+      expect(order.items[0].unitPrice.amount).toBe(999.99)
+    })
 
-        order.addItem(item);
+    it('should emit ItemAddedToOrder event when adding item', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      const productSku = new SKU('LAPTOP-001')
+      const quantity = new Quantity(1)
+      const unitPrice = new Money(999.99, new Currency('USD'))
 
-        const events = order.pullEvents();
-        expect(events).toHaveLength(2);
+      order.addItem(productSku, quantity, unitPrice)
 
-        const added = events[0]!;
-        const total = events[1]!;
-        expect(added).toBeInstanceOf(ItemAddedToOrder);
-        expect(added).toMatchObject({
-            orderId: order.id.value,
-            sku: 'ABC-123',
-            quantity: 2,
-        });
-        expect(added.type).toBe('order.item_added');
+      const events = order.events
+      expect(events).toHaveLength(2) // OrderCreated + ItemAddedToOrder
+      
+      const itemAddedEvent = events[1] as ItemAddedToOrder
+      expect(itemAddedEvent).toBeInstanceOf(ItemAddedToOrder)
+      expect(itemAddedEvent.aggregateId).toBe('ORDER-001')
+      expect(itemAddedEvent.productSku).toBe('LAPTOP-001')
+      expect(itemAddedEvent.quantity).toBe(1)
+      expect(itemAddedEvent.unitPrice).toBe(999.99)
+      expect(itemAddedEvent.currency).toBe('USD')
+    })
 
-        expect(total).toBeInstanceOf(OrderTotalRecalculated);
-        expect(total).toMatchObject({
-            orderId: order.id.value,
-            total: 20,
-            currency: USD,
-        });
-        expect(total.type).toBe('order.total_recalculated');
-    });
+    it('should increase quantity when adding same product with same price', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      const productSku = new SKU('LAPTOP-001')
+      const unitPrice = new Money(999.99, new Currency('USD'))
 
-    it('merges quantity when adding same SKU and currency', () => {
-        // Same SKU+currency should merge quantities instead of duplicating lines
-        const order = Order.create(new OrderId('ORD-merge'), USD);
-        order.pullEvents();
+      order.addItem(productSku, new Quantity(1), unitPrice)
+      order.addItem(productSku, new Quantity(2), unitPrice)
 
-        order.addItem(makeItem('ABC-1', 10, USD, 1));
-        order.addItem(makeItem('ABC-1', 10, USD, 2));
+      expect(order.items).toHaveLength(1)
+      expect(order.items[0].quantity.value).toBe(3)
+      expect(order.events).toHaveLength(3) // OrderCreated + 2 ItemAddedToOrder
+    })
 
-        const items = order.getItems();
-        expect(items).toHaveLength(1);
-        expect(items[0]?.quantity).toBe(3);
-        expect(order.total().amount).toBe(30);
-    });
+    it('should throw error when adding same product with different price', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      const productSku = new SKU('LAPTOP-001')
+      const price1 = new Money(999.99, new Currency('USD'))
+      const price2 = new Money(1199.99, new Currency('USD'))
 
-    it('keeps separate lines for different SKUs', () => {
-        // Different SKUs should remain separate line items
-        const order = Order.create(new OrderId('ORD-lines'), USD);
-        order.pullEvents();
+      order.addItem(productSku, new Quantity(1), price1)
 
-        order.addItem(makeItem('A-1', 5, USD, 1));
-        order.addItem(makeItem('B-1', 7, USD, 2));
+      expect(() => {
+        order.addItem(productSku, new Quantity(1), price2)
+      }).toThrow('Cannot add item with different unit price')
+    })
 
-        const items = order.getItems();
-        expect(items).toHaveLength(2);
-        expect(order.total().amount).toBe(19);
-    });
+    it('should add multiple different products', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      const laptop = new SKU('LAPTOP-001')
+      const mouse = new SKU('MOUSE-001')
+      const usd = new Currency('USD')
 
-    it('throws on currency mismatch', () => {
-        // Adding item with mismatched currency should raise CurrencyMismatchError
-        const order = Order.create(new OrderId('ORD-curr'), USD);
-        order.pullEvents();
+      order.addItem(laptop, new Quantity(1), new Money(999.99, usd))
+      order.addItem(mouse, new Quantity(2), new Money(29.99, usd))
 
-        expect(() => order.addItem(makeItem('A-1', 5, EUR, 1))).toThrow(CurrencyMismatchError);
-    });
-});
+      expect(order.items).toHaveLength(2)
+      expect(order.items[0].productSku.value).toBe('LAPTOP-001')
+      expect(order.items[1].productSku.value).toBe('MOUSE-001')
+    })
+  })
+
+  describe('totals calculation', () => {
+    it('should calculate total by currency for single currency', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      const usd = new Currency('USD')
+      order.addItem(new SKU('LAPTOP-001'), new Quantity(1), new Money(999.99, usd))
+      order.addItem(new SKU('MOUSE-001'), new Quantity(2), new Money(29.99, usd))
+
+      const totals = order.getTotalByCurrency()
+
+      expect(totals.size).toBe(1)
+      expect(totals.get('USD')?.amount).toBe(1059.97) // 999.99 + (29.99 * 2)
+    })
+
+    it('should calculate totals by currency for multiple currencies', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      const usd = new Currency('USD')
+      const eur = new Currency('EUR')
+
+      order.addItem(new SKU('LAPTOP-001'), new Quantity(1), new Money(999.99, usd))
+      order.addItem(new SKU('TABLET-001'), new Quantity(1), new Money(499.99, eur))
+
+      const totals = order.getTotalByCurrency()
+
+      expect(totals.size).toBe(2)
+      expect(totals.get('USD')?.amount).toBe(999.99)
+      expect(totals.get('EUR')?.amount).toBe(499.99)
+    })
+
+    it('should return empty map when no items', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+
+      const totals = order.getTotalByCurrency()
+
+      expect(totals.size).toBe(0)
+    })
+  })
+
+  describe('event management', () => {
+    it('should clear events', () => {
+      const orderSku = new SKU('ORDER-001')
+      const order = new Order(orderSku)
+      
+      order.addItem(
+        new SKU('LAPTOP-001'),
+        new Quantity(1),
+        new Money(999.99, new Currency('USD'))
+      )
+
+      expect(order.events).toHaveLength(2)
+
+      order.clearEvents()
+
+      expect(order.events).toHaveLength(0)
+    })
+  })
+})

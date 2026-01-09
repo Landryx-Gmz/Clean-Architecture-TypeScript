@@ -1,5 +1,5 @@
 import fastify from 'fastify'
-import { ServerDependencies } from '../../application/ports/server-dependencies.js'
+import { ServerDependencies } from '../../application/ports/ServerDependencies.js'
 import { OrderController } from './controllers/OrderController.js'
 
 export async function buildServer(dependencies: ServerDependencies) {
