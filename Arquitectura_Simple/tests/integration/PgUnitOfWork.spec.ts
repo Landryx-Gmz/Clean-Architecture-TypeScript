@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Pool } from 'pg';
-import { PgUnitOfWork } from '../../src/infrastructure/persistence/postgres/pg-unit-of-work.js';
-import { Order } from '../../src/domain/entities/order.js';
-import { SKU } from '../../src/domain/value-objects/sku.js';
-import { Money } from '../../src/domain/value-objects/money.js';
-import { Currency } from '../../src/domain/value-objects/currency.js';
-import { Quantity } from '../../src/domain/value-objects/quantity.js';
+import { PgUnitOfWork } from '../../src/infrastructure/persistence/postgres/PgUnitOfWork.js';
+import { Order } from '../../src/domain/entities/Order.js';
+import { SKU } from '../../src/domain/value-objects/SKU.js';
+import { Money } from '../../src/domain/value-objects/Money.js';
+import { Currency } from '../../src/domain/value-objects/Currency.js';
+import { Quantity } from '../../src/domain/value-objects/Quantity.js';
 import { getDatabaseUrl } from '../../src/composition/config.js';
 
 describe('PgUnitOfWork', () => {
@@ -36,7 +36,7 @@ describe('PgUnitOfWork', () => {
   it('should successfully commit transaction when everything works', async () => {
     const orderSku = new SKU('TEST-ORDER-001');
     const productSku = new SKU('PRODUCT-001');
-    
+
     const result = await unitOfWork.run(async (repos) => {
       // Create order
       const order = new Order(orderSku);
@@ -56,7 +56,7 @@ describe('PgUnitOfWork', () => {
     });
 
     expect(result.success).toBe(true);
-    
+
     // Verify order was saved
     const findResult = await unitOfWork.run(async (repos) => {
       return await repos.orderRepository.findById(orderSku);
@@ -74,7 +74,7 @@ describe('PgUnitOfWork', () => {
 
   it('should rollback transaction when error occurs', async () => {
     const orderSku = new SKU('TEST-ORDER-002');
-    
+
     const result = await unitOfWork.run(async (repos) => {
       // Create order
       const order = new Order(orderSku);
@@ -90,7 +90,7 @@ describe('PgUnitOfWork', () => {
     });
 
     expect(result.success).toBe(false);
-    
+
     // Verify order was not saved due to rollback
     const findResult = await unitOfWork.run(async (repos) => {
       return await repos.orderRepository.findById(orderSku);
@@ -109,7 +109,7 @@ describe('PgUnitOfWork', () => {
   it('should allow multiple repository operations in same transaction', async () => {
     const orderSku1 = new SKU('TEST-ORDER-003');
     const orderSku2 = new SKU('TEST-ORDER-004');
-    
+
     const result = await unitOfWork.run(async (repos) => {
       // Create first order
       const order1 = new Order(orderSku1);
@@ -129,12 +129,12 @@ describe('PgUnitOfWork', () => {
     });
 
     expect(result.success).toBe(true);
-    
+
     // Verify both orders were saved
     const findResult1 = await unitOfWork.run(async (repos) => {
       return await repos.orderRepository.findById(orderSku1);
     });
-    
+
     const findResult2 = await unitOfWork.run(async (repos) => {
       return await repos.orderRepository.findById(orderSku2);
     });

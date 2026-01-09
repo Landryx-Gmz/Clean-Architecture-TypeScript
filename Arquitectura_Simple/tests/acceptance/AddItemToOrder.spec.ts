@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { AddItemToOrder } from '@application/use-cases/add-item-to-order'
-import { InMemoryOrderRepository } from '@infrastructure/persistence/in-memory/in-memory-order-repository'
-import { StaticPricingService } from '@infrastructure/http/StaticPricingService'
-import { NoopEventBus } from '@infrastructure/messaging/NoopEventBus'
-import { Order } from '@domain/entities/order'
-import { SKU } from '@domain/value-objects/sku'
-import { isOk, isError } from '@shared/result'
+import { AddItemToOrder } from '../../src/application/use-cases/add-item-to-order.js'
+import { InMemoryOrderRepository } from '../../src/infrastructure/persistence/in-memory/InMemoryOrderRepository.js'
+import { StaticPricingService } from '../../src/infrastructure/http/StaticPricingService.js'
+import { NoopEventBus } from '../../src/infrastructure/messaging/NoopEventBus.js'
+import { Order } from '../../src/domain/entities/Order.js'
+import { SKU } from '../../src/domain/value-objects/SKU.js'
+import { isOk, isError } from '../../src/shared/Result.js'
 
 describe('AddItemToOrder - Acceptance Test', () => {
   let orderRepository: InMemoryOrderRepository
@@ -40,7 +40,7 @@ describe('AddItemToOrder - Acceptance Test', () => {
       // And: The order contains the new item
       const orderResult = await orderRepository.findById(orderSku)
       expect(isOk(orderResult)).toBe(true)
-      
+
       if (isOk(orderResult)) {
         const updatedOrder = orderResult.data
         expect(updatedOrder.items).toHaveLength(1)
@@ -73,7 +73,7 @@ describe('AddItemToOrder - Acceptance Test', () => {
       // Then: The order contains both items
       const orderResult = await orderRepository.findById(orderSku)
       expect(isOk(orderResult)).toBe(true)
-      
+
       if (isOk(orderResult)) {
         const updatedOrder = orderResult.data
         expect(updatedOrder.items).toHaveLength(2)

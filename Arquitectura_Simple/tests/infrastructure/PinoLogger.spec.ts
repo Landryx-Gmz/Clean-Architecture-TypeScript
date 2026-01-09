@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import pino from 'pino'
-import { PinoLogger } from '../../src/infrastructure/logging/pino-logger.js'
+import { PinoLogger } from '../../src/infrastructure/logging/PinoLogger.js'
 
 describe('PinoLogger', () => {
   it('should create a child logger with context', () => {
@@ -35,10 +34,10 @@ describe('PinoLogger', () => {
     } as any
 
     const logger = new PinoLogger(mockPino)
-    
+
     logger.info('Test message')
     expect(mockPino.info).toHaveBeenCalledWith('Test message')
-    
+
     logger.info('Test with object', { key: 'value' })
     expect(mockPino.info).toHaveBeenCalledWith({ key: 'value' }, 'Test with object')
   })
@@ -53,10 +52,10 @@ describe('PinoLogger', () => {
     } as any
 
     const logger = new PinoLogger(mockPino)
-    
+
     logger.error('Error message')
     expect(mockPino.error).toHaveBeenCalledWith('Error message')
-    
+
     logger.error('Error with object', { error: 'details' })
     expect(mockPino.error).toHaveBeenCalledWith({ error: 'details' }, 'Error with object')
   })

@@ -24,4 +24,7 @@ export default defineConfig({
         environment: 'node',
         globals: true,
     },
+    define: {
+        "import.meta.dirname": JSON.stringify(__dirname),
+    },
 });
