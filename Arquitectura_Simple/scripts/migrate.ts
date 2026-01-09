@@ -1,10 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { Client } from 'pg';
 import * as dotenv from 'dotenv';
-import { config, getDatabaseUrl } from '../src/composition/config.js'
 
 dotenv.config(); // Cargar variables de entorno desde .env
+
+// ES modules no tienen __dirname, necesitamos crearlo
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function runMigrations() {
     const migrationsDir = path.resolve(__dirname, '../db/migrations');
@@ -15,8 +19,9 @@ async function runMigrations() {
         .sort(); // Ordenar los archivos alfabéticamente
 
     // Configuración de la conexión a la base de datos desde .env
+    const databaseUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/orders_db';
     const client = new Client({
-        connectionString: process.env.DATABASE_URL,
+        connectionString: databaseUrl,
     });
 
     try {
