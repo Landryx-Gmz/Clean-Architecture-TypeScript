@@ -1,6 +1,6 @@
-import { buildServer } from './src/infrastructure/http/server.js'
-import { buildUnifiedContainer } from './src/composition/unified-container.js'
-import { config } from './src/composition/config.js'
+import { buildServer } from './infrastructure/http/server.js'
+import { buildUnifiedContainer } from './composition/unified-container.js'
+import { config } from './composition/config.js'
 import { FastifyInstance } from 'fastify'
 
 let server: FastifyInstance | null = null
@@ -10,20 +10,20 @@ async function main() {
   try {
     console.log(`🚀 Starting application in ${config.NODE_ENV} mode`)
     console.log(`📊 Database type: ${config.DATABASE_TYPE}`)
-    
+
     // Composition Root - Dependency Injection
     dependencies = buildUnifiedContainer()
     dependencies.logger.info('Dependencies initialized')
-    
+
     // Build server with injected dependencies
     server = await buildServer(dependencies)
     dependencies.logger.info('Server built successfully')
-    
+
     const host = process.env.HOST || '0.0.0.0'
     const port = config.PORT
-    
+
     await server.listen({ host, port })
-    
+
     dependencies.logger.info('Server started successfully', { host, port })
     console.log(`🚀 Server running at http://${host}:${port}`)
     console.log(`📋 Health check: http://${host}:${port}/health`)
@@ -40,7 +40,7 @@ async function main() {
 
 async function cleanup() {
   console.log('🧹 Starting cleanup process...')
-  
+
   try {
     // Close server
     if (server) {
@@ -48,14 +48,14 @@ async function cleanup() {
       await server.close()
       console.log('✅ HTTP server closed')
     }
-    
+
     // Cleanup dependencies (database connections, etc.)
     if (dependencies?.cleanup) {
       console.log('🗃️ Cleaning up dependencies...')
       await dependencies.cleanup()
       console.log('✅ Dependencies cleaned up')
     }
-    
+
     console.log('✅ Cleanup completed successfully')
   } catch (error) {
     console.error('❌ Error during cleanup:', error)
@@ -88,7 +88,7 @@ process.on('SIGINT', async () => {
 process.on('unhandledRejection', (reason) => {
   console.error('💥 Unhandled Promise Rejection:', reason)
   if (dependencies?.logger) {
-    dependencies.logger.error('Unhandled promise rejection', { 
+    dependencies.logger.error('Unhandled promise rejection', {
       reason: reason instanceof Error ? reason.message : String(reason),
       stack: reason instanceof Error ? reason.stack : undefined
     })
@@ -99,7 +99,7 @@ process.on('unhandledRejection', (reason) => {
 process.on('uncaughtException', (error) => {
   console.error('💥 Uncaught Exception:', error)
   if (dependencies?.logger) {
-    dependencies.logger.error('Uncaught exception', { 
+    dependencies.logger.error('Uncaught exception', {
       error: error.message,
       stack: error.stack
     })
