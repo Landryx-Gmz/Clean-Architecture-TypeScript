@@ -1,36 +1,51 @@
-# Microsercio de Pedidos
+## Microservicio de Pedidos
 
-**Dominio**: Order, Price, SKU, Quantity, eventos de dominio.
-**Application**: casos de uso CreateOrder, AddItemOrder, puertos y DTO.
-**Infra**: repositorio InMemory, pricing estático, event bus no-op.
-**HTTP**: endpoints mínimos con Fstify.
-**Composición**: container.ts como composition root.
-**Tests**: dominio + aceptación de caso de uso.
+Implementacion sencilla de Clean Architecture en TypeScript para gestionar pedidos: crear pedidos y agregar lineas con precios actuales.
 
+### Capas (breve)
+- Dominio: entidades (`Order`), value objects (`Money`, `SKU`, `Quantity`), eventos de dominio.
+- Aplicacion: casos de uso (`create-order`, `add-item-to-order`), puertos (repositorio, pricing, bus de eventos), DTOs.
+- Infraestructura: repositorios (in-memory y postgres), pricing estatico, event bus no-op/outbox, HTTP con Fastify.
+- Composicion: containers que ensamblan dependencias.
 
-# Comportamiento
-- `POST /orders` crea un pedido.
-- `POST /orders/:orderId/items` agrega una línea (SKU + qty) con precio actual.
-- Devulve el total del pedido.
+### Endpoints principales
+- `POST /orders` crea un pedido y devuelve el total inicial.
+- `POST /orders/:orderId/items` agrega una linea (SKU + cantidad) y recalcula el total.
 
-# Estructura de carpetas
+### Estructura de carpetas
+- `src/domain`: entidades, value objects, eventos.
+- `src/application`: casos de uso, puertos, DTOs, errores.
+- `src/infrastructure`: HTTP, logging, messaging, persistence (in-memory y postgres).
+- `src/composition`: configuracion y containers.
+- `src/shared`: helpers como `Result`.
+- `scripts`: migraciones y utilidades CLI.
+- `tests`: pruebas unitarias, de aceptacion e integracion.
 
-/scr
-  /domain
-    /entities
-    /value-objects
-    /events
-    /errors
-  /application
-    /use-case
-    /ports
-    /dto
-    /errors.ts
-  /infrastructure
-    /persitence/in-memory
-    /http/controllers
-    /http
-    /messaging
-  /composition
-  /shared
-/tests
+### Requisitos
+- Node 20+
+- Docker (solo si usas Postgres con docker-compose)
+
+### Instalacion
+```bash
+npm install
+```
+
+### Ejecutar la API (modo dev)
+```bash
+npm run dev
+# levanta Fastify en el puerto definido en config (ver src/infrastructure/http/server.ts)
+```
+
+### Ejecutar pruebas
+```bash
+npm test
+```
+
+### Migraciones (Postgres)
+```bash
+npm run migrate
+```
+
+### Notas de configuracion
+- El proyecto usa `moduleResolution: NodeNext`; las importaciones relativas en tests incluyen la extension `.js`.
+- Aliases definidos en `tsconfig.json` y `vitest.config.ts` (`@domain`, `@application`, etc.).
