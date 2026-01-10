@@ -565,6 +565,50 @@ const total = stored?.total();
 
 ---
 
+## ❌ Error #8: Test de integración fallaba al buscar orden
+
+### 📍 Ubicación
+Archivo: `tests/integration/PgUnitOfWork.spec.ts` línea 67
+
+### 🔴 Problema Original
+```typescript
+expect(findResult.data.success).toBe(true);
+```
+**Error:**
+```
+Amount must be a finite number
+```
+
+### ⚠️ ¿Por qué pasó?
+El repositorio `PostgresOrderRepository` intentaba reconstruir una orden desde la base de datos, pero los valores `DECIMAL` (como `unit_price`) se devuelven como **strings** en PostgreSQL. Esto causaba un error al crear un objeto `Money` porque esperaba un número.
+
+### ✅ Solución
+Convertir los valores `DECIMAL` a números antes de crear el objeto `Money`.
+
+**ANTES:**
+```typescript
+const unitPrice = new Money(itemRow.unit_price, currency);
+```
+
+**DESPUÉS:**
+```typescript
+const unitPrice = new Money(Number(itemRow.unit_price), currency);
+```
+
+### 📂 Archivo modificado
+`src/infrastructure/persistence/postgres/PostgresOrderRepository.ts`
+
+### 📝 Explicación
+PostgreSQL devuelve valores `DECIMAL` como strings para evitar problemas de precisión. Sin embargo, en este caso, necesitamos convertirlos explícitamente a números para que el constructor de `Money` funcione correctamente.
+
+### ✅ Verificación
+Después de aplicar la solución, el test pasó correctamente:
+```bash
+✓ should successfully commit transaction when everything works
+```
+
+---
+
 ## 📊 Tabla Resumen de Errores
 
 | Error | Archivo | Causa | Solución |
@@ -576,6 +620,7 @@ const total = stored?.total();
 | #5 | PostgresOrderRepository.ts | Acceso a privados | Usar métodos públicos (`getItems()`) |
 | #6 | AddItemToOrder.ts, CreateOrder.ts | No desempacar `Result` | Usar `isSuccess()` y extraer `.value` |
 | #7 | Tests | No desempacar `Result` | Mismo que #6, en tests |
+| #8 | PgUnitOfWork.spec.ts | Conversión de tipos en PostgreSQL | Convertir `DECIMAL` a número en tests |
 
 ---
 
@@ -634,6 +679,5 @@ Si todo está verde (✓), ¡has solucionado todos los errores!
 
 ---
 
-**Generado:** 3 de enero de 2026  
 **Proyecto:** Clean Architecture TypeScript  
 **Estado:** ✅ Sin errores
