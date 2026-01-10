@@ -49,3 +49,36 @@ npm run migrate
 ### Notas de configuracion
 - El proyecto usa `moduleResolution: NodeNext`; las importaciones relativas en tests incluyen la extension `.js`.
 - Aliases definidos en `tsconfig.json` y `vitest.config.ts` (`@domain`, `@application`, etc.).
+
+## Orden de ejecución
+-Docker_desktop abierto
+-npm run db:up
+-npm run dev
+-npm run worker:outbox
+
+## Consultas Docker_desktop en terminal de la BD
+
+-psql -U postgres -d orders
+
+Para ver que tablas tenemos ejecutamos:
+
+\dt
+
+Para ver la tabla orders ejecutamos 
+
+\d orders
+
+Para hacer consultas:
+
+consultar orders:
+SELECT * FROM orders; 
+
+consultar items:
+SELECT * FROM order_items; 
+
+Consultar eventos en la tabla oubox ordenado de manera descendiente:
+SELECT * FROM outbox ORDER BY created_at DESC; 
+q para salir
+
+Para salir de psql:
+/q
