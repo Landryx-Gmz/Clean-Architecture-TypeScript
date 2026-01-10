@@ -94,7 +94,7 @@ export class PostgresOrderRepository implements OrderRepository {
         const productSku = new SKU(itemRow.sku);
         const quantity = new Quantity(itemRow.quantity);
         const currency = new Currency(orderRow.currency);
-        const unitPrice = new Money(itemRow.unit_price, currency);
+        const unitPrice = new Money(Number(itemRow.unit_price), currency);
 
         order.addItem(productSku, quantity, unitPrice);
       }

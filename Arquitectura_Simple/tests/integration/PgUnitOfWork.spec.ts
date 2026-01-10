@@ -59,7 +59,13 @@ describe('PgUnitOfWork', () => {
 
     // Verify order was saved
     const findResult = await unitOfWork.run(async (repos) => {
-      return await repos.orderRepository.findById(orderSku);
+      const findRes = await repos.orderRepository.findById(orderSku);
+      console.log('Find result:', {
+        success: findRes.success,
+        error: findRes.success ? undefined : findRes.error,
+        data: findRes.success ? { sku: findRes.data.sku.value, items: findRes.data.items.length } : undefined
+      });
+      return findRes;
     });
 
     expect(findResult.success).toBe(true);
