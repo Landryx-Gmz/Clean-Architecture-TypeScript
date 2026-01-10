@@ -1,12 +1,12 @@
-import { StaticPricingService } from '../infrastructure/http/StaticPricingService.js';
-import { NoopEventBus } from '../infrastructure/messaging/NoopEventBus.js';
-import { PinoLogger } from '../infrastructure/logging/PinoLogger.js';
-import { CreateOrderWithUoW } from '../application/use-cases/create-order-with-uow.js';
-import { PricingService } from '../application/ports/PricingService.js';
-import { EventBus } from '../application/ports/EventBus.js';
-import { Logger } from '../application/ports/Logger.js';
-import { UnitOfWork } from '../application/ports/UnitOfWork.js';
-import { DatabaseFactory } from '../infrastructure/database/DatabaseFactory.js';
+import { StaticPricingService } from '@infrastructure/http/StaticPricingService.js';
+import { NoopEventBus } from '@infrastructure/messaging/NoopEventBus.js';
+import { PinoLogger } from '@infrastructure/logging/PinoLogger.js';
+import { CreateOrderWithUoW } from '@application/use-cases/CreateOrderWithUow.js';
+import { PricingService } from '@application/ports/PricingService.js';
+import { EventBus } from '@application/ports/EventBus.js';
+import { Logger } from '@application/ports/Logger.js';
+import { UnitOfWork } from '@application/ports/UnitOfWork.js';
+import { DatabaseFactory } from '@infrastructure/database/DatabaseFactory.js';
 
 export interface PostgresDependencies {
   // Ports

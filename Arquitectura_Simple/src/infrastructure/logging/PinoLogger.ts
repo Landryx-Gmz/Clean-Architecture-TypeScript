@@ -1,5 +1,5 @@
 import pino from 'pino'
-import { Logger, LoggerContext } from '../../application/ports/Logger.js'
+import { Logger, LoggerContext } from '@application/ports/Logger.js'
 
 export class PinoLogger implements Logger {
   private readonly pinoInstance: pino.Logger

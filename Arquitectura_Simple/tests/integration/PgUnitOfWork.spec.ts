@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { Pool } from 'pg';
-import { PgUnitOfWork } from '../../src/infrastructure/persistence/postgres/PgUnitOfWork.js';
-import { Order } from '../../src/domain/entities/Order.js';
-import { SKU } from '../../src/domain/value-objects/SKU.js';
-import { Money } from '../../src/domain/value-objects/Money.js';
-import { Currency } from '../../src/domain/value-objects/Currency.js';
-import { Quantity } from '../../src/domain/value-objects/Quantity.js';
-import { getDatabaseUrl } from '../../src/composition/config.js';
+import { PgUnitOfWork } from '@infrastructure/persistence/postgres/PgUnitOfWork.js';
+import { Order } from '@domain/entities/Order.js';
+import { SKU } from '@domain/value-objects/SKU.js';
+import { Money } from '@domain/value-objects/Money.js';
+import { Currency } from '@domain/value-objects/Currency.js';
+import { Quantity } from '@domain/value-objects/Quantity.js';
+import { getDatabaseUrl } from '@composition/config.js';
 
 describe('PgUnitOfWork', () => {
   let pool: Pool;

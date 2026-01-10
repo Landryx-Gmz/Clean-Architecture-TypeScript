@@ -1,7 +1,7 @@
-import { DomainEvent } from '../../domain/events/DomainEvent.js'
-import { Result, ok } from '../../shared/Result.js'
-import { EventBus } from '../../application/ports/EventBus.js'
-import { AppError } from '../../application/errors.js'
+import { DomainEvent } from '@domain/events/DomainEvent.js'
+import { Result, ok } from '@shared/Result.js'
+import { EventBus } from '@application/ports/EventBus.js'
+import { AppError } from '@application/errors.js'
 
 export class NoopEventBus implements EventBus {
   async publish(_events: DomainEvent[]): Promise<Result<void, AppError>> {

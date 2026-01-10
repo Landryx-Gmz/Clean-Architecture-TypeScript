@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { DatabaseFactory } from '../database/DatabaseFactory.js'
+import { DatabaseFactory } from '@infrastructure/database/DatabaseFactory.js'
 
 interface OutboxEvent {
   id: string

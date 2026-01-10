@@ -1,4 +1,4 @@
-import { DomainEvent } from './DomainEvent.js'
+import { DomainEvent } from '@domain/events/DomainEvent.js'
 
 export class ItemAddedToOrder extends DomainEvent {
   readonly productSku: string

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ok, fail, map, flatMap, combine } from '../src/shared/Result.js';
+import { ok, fail, map, flatMap, combine } from '@shared/Result.js';
 
 describe('Result', () => {
   it('debe crear un resultado exitoso', () => {

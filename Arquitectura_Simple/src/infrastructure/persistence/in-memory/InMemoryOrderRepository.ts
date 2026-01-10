@@ -1,8 +1,8 @@
-import { Order } from '../../../domain/entities/Order.js'
-import { SKU } from '../../../domain/value-objects/SKU.js'
-import { Result, ok, fail } from '../../../shared/Result.js'
-import { OrderRepository } from '../../../application/ports/OrderRepository.js'
-import { AppError, NotFoundError, InfraError } from '../../../application/errors.js'
+import { Order } from '@domain/entities/Order.js'
+import { SKU } from '@domain/value-objects/SKU.js'
+import { Result, ok, fail } from '@shared/Result.js'
+import { OrderRepository } from '@application/ports/OrderRepository.js'
+import { AppError, NotFoundError, InfraError } from '@application/errors.js'
 
 export class InMemoryOrderRepository implements OrderRepository {
   private readonly orders = new Map<string, Order>()

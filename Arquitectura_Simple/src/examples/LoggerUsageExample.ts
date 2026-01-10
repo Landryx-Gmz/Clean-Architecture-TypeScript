@@ -1,4 +1,4 @@
-import { PinoLogger } from '../infrastructure/logging/PinoLogger.js'
+import { PinoLogger } from '@infrastructure/logging/PinoLogger.js'
 
 async function demonstrateLogging() {
   console.log('=== PinoLogger with Context Example ===\n')

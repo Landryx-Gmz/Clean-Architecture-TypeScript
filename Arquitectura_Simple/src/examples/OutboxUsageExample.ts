@@ -1,5 +1,5 @@
-import { MessagingFactory } from '../infrastructure/messaging/MessagingFactory.js'
-import { OrderCreated } from '../domain/events/OrderCreated.js'
+import { MessagingFactory } from '@infrastructure/messaging/MessagingFactory.js'
+import { OrderCreated } from '@domain/events/OrderCreated.js'
 
 async function exampleEventBusUsage() {
   console.log('=== EventBus with Outbox Pattern Example ===\n')

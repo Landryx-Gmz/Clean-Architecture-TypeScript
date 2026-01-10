@@ -1,13 +1,13 @@
 import { Client, PoolClient } from 'pg';
 import { createHash } from 'crypto';
-import { OrderRepository } from '../../../application/ports/OrderRepository.js';
-import { Order } from '../../../domain/entities/Order.js';
-import { SKU } from '../../../domain/value-objects/SKU.js';
-import { Money } from '../../../domain/value-objects/Money.js';
-import { Currency } from '../../../domain/value-objects/Currency.js';
-import { Quantity } from '../../../domain/value-objects/Quantity.js';
-import { Result, ok, fail } from '../../../shared/Result.js';
-import { AppError, InfraError, NotFoundError } from '../../../application/errors.js';
+import { OrderRepository } from '@application/ports/OrderRepository.js';
+import { Order } from '@domain/entities/Order.js';
+import { SKU } from '@domain/value-objects/SKU.js';
+import { Money } from '@domain/value-objects/Money.js';
+import { Currency } from '@domain/value-objects/Currency.js';
+import { Quantity } from '@domain/value-objects/Quantity.js';
+import { Result, ok, fail } from '@shared/Result.js';
+import { AppError, InfraError, NotFoundError } from '@application/errors.js';
 
 interface OrderRow {
   id: string;

@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { AddItemToOrder } from '../../src/application/use-cases/add-item-to-order.js'
-import { InMemoryOrderRepository } from '../../src/infrastructure/persistence/in-memory/InMemoryOrderRepository.js'
-import { StaticPricingService } from '../../src/infrastructure/http/StaticPricingService.js'
-import { NoopEventBus } from '../../src/infrastructure/messaging/NoopEventBus.js'
-import { Order } from '../../src/domain/entities/Order.js'
-import { SKU } from '../../src/domain/value-objects/SKU.js'
-import { isOk, isError } from '../../src/shared/Result.js'
+import { AddItemToOrder } from '@application/use-cases/AddItemToOrder.js'
+import { InMemoryOrderRepository } from '@infrastructure/persistence/in-memory/InMemoryOrderRepository.js'
+import { StaticPricingService } from '@infrastructure/http/StaticPricingService.js'
+import { NoopEventBus } from '@infrastructure/messaging/NoopEventBus.js'
+import { Order } from '@domain/entities/Order.js'
+import { SKU } from '@domain/value-objects/SKU.js'
+import { isOk, isError } from '@shared/Result.js'
 
 describe('AddItemToOrder - Acceptance Test', () => {
   let orderRepository: InMemoryOrderRepository

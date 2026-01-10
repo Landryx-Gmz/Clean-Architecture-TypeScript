@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest } from 'fastify'
 import { randomUUID } from 'crypto'
-import { Logger } from '../../../application/ports/Logger.js'
+import { Logger } from '@application/ports/Logger.js'
 
 declare module 'fastify' {
   interface FastifyRequest {

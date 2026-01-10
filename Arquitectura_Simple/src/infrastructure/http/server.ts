@@ -1,6 +1,6 @@
 import fastify from 'fastify'
-import { ServerDependencies } from '../../application/ports/ServerDependencies.js'
-import { OrderController } from './controllers/OrderController.js'
+import { ServerDependencies } from '@application/ports/ServerDependencies.js'
+import { OrderController } from '@infrastructure/http/controllers/OrderController.js'
 
 export async function buildServer(dependencies: ServerDependencies) {
   const server = fastify({

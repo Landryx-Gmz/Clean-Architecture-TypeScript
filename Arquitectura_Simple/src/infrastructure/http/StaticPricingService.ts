@@ -1,9 +1,9 @@
-import { SKU } from '../../domain/value-objects/SKU.js'
-import { Money } from '../../domain/value-objects/Money.js'
-import { Currency } from '../../domain/value-objects/Currency.js'
-import { Result, ok, fail } from '../../shared/Result.js'
-import { PricingService } from '../../application/ports/PricingService.js'
-import { AppError, NotFoundError, InfraError } from '../../application/errors.js'
+import { SKU } from '@domain/value-objects/SKU.js'
+import { Money } from '@domain/value-objects/Money.js'
+import { Currency } from '@domain/value-objects/Currency.js'
+import { Result, ok, fail } from '@shared/Result.js'
+import { PricingService } from '@application/ports/PricingService.js'
+import { AppError, NotFoundError, InfraError } from '@application/errors.js'
 
 export class StaticPricingService implements PricingService {
   private readonly prices = new Map<string, { amount: number; currency: string }>([

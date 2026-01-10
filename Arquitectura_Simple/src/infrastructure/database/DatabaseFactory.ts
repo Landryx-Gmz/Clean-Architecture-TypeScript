@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
-import { PgUnitOfWork } from '../persistence/postgres/PgUnitOfWork.js';
-import { getDatabaseUrl } from '../../composition/config.js';
+import { PgUnitOfWork } from '@infrastructure/persistence/postgres/PgUnitOfWork.js';
+import { getDatabaseUrl } from '@composition/config.js';
 
 export class DatabaseFactory {
   private static pool: Pool | null = null;

@@ -1,10 +1,10 @@
-import { SKU } from '../value-objects/SKU.js'
-import { OrderItem } from '../value-objects/OrderItem.js'
-import { Money } from '../value-objects/Money.js'
-import { Quantity } from '../value-objects/Quantity.js'
-import { DomainEvent } from '../events/DomainEvent.js'
-import { OrderCreated } from '../events/OrderCreated.js'
-import { ItemAddedToOrder } from '../events/ItemAddedToOrder.js'
+import { SKU } from '@domain/value-objects/SKU.js'
+import { OrderItem } from '@domain/value-objects/OrderItem.js'
+import { Money } from '@domain/value-objects/Money.js'
+import { Quantity } from '@domain/value-objects/Quantity.js'
+import { DomainEvent } from '@domain/events/DomainEvent.js'
+import { OrderCreated } from '@domain/events/OrderCreated.js'
+import { ItemAddedToOrder } from '@domain/events/ItemAddedToOrder.js'
 
 export class Order {
   private readonly _sku: SKU

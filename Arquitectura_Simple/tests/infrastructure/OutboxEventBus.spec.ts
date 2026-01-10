@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { OutboxEventBus } from '../../src/infrastructure/messaging/OutboxEventBus.js'
-import { DomainEvent } from '../../src/domain/events/DomainEvent.js'
+import { OutboxEventBus } from '@infrastructure/messaging/OutboxEventBus.js'
+import { DomainEvent } from '@domain/events/DomainEvent.js'
 
 class TestEvent extends DomainEvent {
   constructor(aggregateId: string, public readonly testData: string) {

@@ -1,8 +1,8 @@
-import { EventBus } from '../../application/ports/EventBus.js'
-import { OutboxEventBus } from './OutboxEventBus.js'
-import { NoopEventBus } from './NoopEventBus.js'
-import { OutboxDispatcher } from './OutboxDispatcher.js'
-import { DatabaseFactory } from '../database/DatabaseFactory.js'
+import { EventBus } from '@application/ports/EventBus.js'
+import { OutboxEventBus } from '@infrastructure/messaging/OutboxEventBus.js'
+import { NoopEventBus } from '@infrastructure/messaging/NoopEventBus.js'
+import { OutboxDispatcher } from '@infrastructure/messaging/OutboxDispatcher.js'
+import { DatabaseFactory } from '@infrastructure/database/DatabaseFactory.js'
 
 export class MessagingFactory {
   static createEventBus(type: 'outbox' | 'noop' = 'outbox'): EventBus {

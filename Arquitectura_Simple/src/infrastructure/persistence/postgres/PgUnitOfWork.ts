@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
-import { UnitOfWork, Repositories } from '../../../application/ports/UnitOfWork.js';
-import { PostgresOrderRepository } from './PostgresOrderRepository.js';
-import { Result, ok, fail } from '../../../shared/Result.js';
-import { AppError, InfraError } from '../../../application/errors.js';
+import { UnitOfWork, Repositories } from '@application/ports/UnitOfWork.js';
+import { PostgresOrderRepository } from '@infrastructure/persistence/postgres/PostgresOrderRepository.js';
+import { Result, ok, fail } from '@shared/Result.js';
+import { AppError, InfraError } from '@application/errors.js';
 
 export class PgUnitOfWork implements UnitOfWork {
   constructor(private readonly pool: Pool) { }

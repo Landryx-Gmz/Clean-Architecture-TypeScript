@@ -1,6 +1,6 @@
-import { SKU } from './SKU.js'
-import { Quantity } from './Quantity.js'
-import { Money } from './Money.js'
+import { SKU } from '@domain/value-objects/SKU.js'
+import { Quantity } from '@domain/value-objects/Quantity.js'
+import { Money } from '@domain/value-objects/Money.js'
 
 export class OrderItem {
   private readonly _productSku: SKU

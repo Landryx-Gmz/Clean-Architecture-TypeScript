@@ -1,11 +1,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import { randomUUID } from 'crypto'
-import { CreateOrder } from '../../../application/use-cases/create-order.js'
-import { AddItemToOrder } from '../../../application/use-cases/add-item-to-order.js'
-import { CreateOrderDto } from '../../../application/dto/CreateOrderDto.js'
-import { AddItemToOrderDto } from '../../../application/dto/AddItemToOrderDto.js'
-import { AppError } from '../../../application/errors.js'
-import { Logger } from '../../../application/ports/Logger.js'
+import { CreateOrder } from '@application/use-cases/CreateOrder.js'
+import { AddItemToOrder } from '@application/use-cases/AddItemToOrder.js'
+import { CreateOrderDto } from '@application/dto/CreateOrderDto.js'
+import { AddItemToOrderDto } from '@application/dto/AddItemToOrderDto.js'
+import { AppError } from '@application/errors.js'
+import { Logger } from '@application/ports/Logger.js'
 
 interface CreateOrderRequest {
   orderSku: string

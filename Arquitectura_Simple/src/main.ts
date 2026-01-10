@@ -1,6 +1,6 @@
-import { buildServer } from './infrastructure/http/server.js'
-import { buildUnifiedContainer } from './composition/unified-container.js'
-import { config } from './composition/config.js'
+import { buildServer } from '@infrastructure/http/server.js'
+import { buildUnifiedContainer } from '@composition/UnifiedContainer.js'
+import { config } from '@composition/config.js'
 import { FastifyInstance } from 'fastify'
 
 let server: FastifyInstance | null = null

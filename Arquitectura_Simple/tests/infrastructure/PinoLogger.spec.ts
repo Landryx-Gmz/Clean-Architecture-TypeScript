@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { PinoLogger } from '../../src/infrastructure/logging/PinoLogger.js'
+import { PinoLogger } from '@infrastructure/logging/PinoLogger.js'
 
 describe('PinoLogger', () => {
   it('should create a child logger with context', () => {

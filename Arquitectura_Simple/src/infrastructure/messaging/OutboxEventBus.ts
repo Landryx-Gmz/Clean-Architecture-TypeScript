@@ -1,9 +1,9 @@
 import { Pool } from 'pg'
 import { randomUUID, createHash } from 'crypto'
-import { DomainEvent } from '../../domain/events/DomainEvent.js'
-import { Result, ok, fail } from '../../shared/Result.js'
-import { EventBus } from '../../application/ports/EventBus.js'
-import { AppError, InfraError } from '../../application/errors.js'
+import { DomainEvent } from '@domain/events/DomainEvent.js'
+import { Result, ok, fail } from '@shared/Result.js'
+import { EventBus } from '@application/ports/EventBus.js'
+import { AppError, InfraError } from '@application/errors.js'
 
 interface OutboxRecord {
   id: string
